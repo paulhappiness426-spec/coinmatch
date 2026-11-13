@@ -2,22 +2,28 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>CoinMatch - Candy Crush Earn</title>
+<title>CandyMatch - Candy Crush Earn</title>
 <style>
 *{box-sizing:border-box}
 body{font-family:Arial;text-align:center;background:linear-gradient(180deg,#ff5da2,#ff9ecb,#ffd6ea);color:#4a0033;margin:0;padding:8px;min-height:100vh}
 h1{color:white;margin:5px;font-size:28px;text-shadow:2px 2px 0 #ff006e}
 .top{background:white;border-radius:20px;padding:10px;margin:8px auto;max-width:400px;box-shadow:0 5px 20px rgba(255,0,110,.3);border:3px solid #ff006e}
 .top b{color:#ff006e;font-size:18px}
-.progress{background:#ffe6f2;height:14px;border-radius:10px;overflow:hidden;margin:8px 0}
-#bar{height:100%;background:linear-gradient(90deg,#ff006e,#ffb300);width:0%;transition:.4s}
+.progress{background:#ffe6f2;height:18px;border-radius:10px;overflow:hidden;margin:8px 0;border:2px solid #ffb3d1}
+#bar{height:100%;background:linear-gradient(90deg,#ff006e,#ff8f00,#ffb300);width:0%;transition:width .8s ease}
 #board{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:400px;margin:10px auto;background:rgba(255,255,255,.9);padding:8px;border-radius:20px;border:3px solid white;box-shadow:0 5px 20px rgba(0,0,0,.2)}
-.cell{font-size:30px;background:linear-gradient(180deg,#fff,#ffd6ea);border-radius:14px;padding:8px 0;cursor:pointer;box-shadow:0 2px 0 #ff9ecb;transition:.15s}
+.cell{font-size:30px;background:linear-gradient(180deg,#fff,#ffd6ea);border-radius:14px;padding:8px 0;cursor:pointer;box-shadow:0 2px 0 #ff9ecb;transition:.15s;position:relative}
 .cell.sel{outline:3px solid #ff006e;background:#ff006e;transform:scale(1.15);z-index:2}
 .cell.pop{animation:pop .45s}
 .cell.fall{animation:fall .4s}
+.cell.blast{animation:blast .6s}
 @keyframes pop{0%{transform:scale(1)}30%{transform:scale(1.5) rotate(12deg)}60%{transform:scale(.8)}100%{transform:scale(1)}}
 @keyframes fall{0%{transform:translateY(-20px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes blast{0%{transform:scale(1);filter:brightness(1)}25%{transform:scale(1.6) rotate(15deg);filter:brightness(2)}50%{transform:scale(1.2)}100%{transform:scale(0);opacity:0}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px) rotate(-1deg)}75%{transform:translateX(6px) rotate(1deg)}}
+.shake{animation:shake .35s}
+#comboPop{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:100;font-size:38px;font-weight:900;color:white;text-shadow:0 4px 0 #ff006e,0 0 20px #ffb300;pointer-events:none;transition:.2s}
+#comboPop.show{transform:translate(-50%,-50%) scale(1.15)}
 button{background:linear-gradient(180deg,#ff006e,#c8005a);color:white;border:none;padding:12px;border-radius:25px;font-weight:bold;margin:5px;cursor:pointer;width:92%;font-size:15px;box-shadow:0 4px 0 #8a0040}
 button.gold{background:linear-gradient(180deg,#ffb300,#ff8f00);box-shadow:0 4px 0 #b25f00;color:#4a0033}
 button:disabled{background:#ccc;box-shadow:none}
@@ -34,17 +40,20 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 .adScreen{background:linear-gradient(135deg,#ff006e,#ffb300);color:white;border-radius:15px;padding:25px 10px;margin:10px 0;font-size:18px}
 .usdt{background:#fff8e1;border:2px dashed #ffb300;border-radius:15px;padding:10px;margin:8px 0;font-size:13px}
 .musicBtn{position:fixed;top:10px;right:10px;width:48px!important;height:48px;border-radius:50%!important;padding:0!important;font-size:22px;z-index:50}
+.particle{position:fixed;width:12px;height:12px;border-radius:50%;pointer-events:none;z-index:99;animation:fly .7s forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
 </style>
 </head>
 <body>
 <button class="musicBtn" id="musicBtn" onclick="toggleMusic()">🎵</button>
-<h1>🍬 CoinMatch 🍭</h1>
+<div id="comboPop">Sweet!</div>
+<h1>🍬 CandyMatch 🍭</h1>
 <p style="color:white;font-size:13px;margin:0">🌍 Play Worldwide • Earn USDT BEP20</p>
-<div class="top">🪙 <b><span id="coins">0</span> Coins</b> • Level <span id="level">1</span> • ⭐ <span id="score">0</span>/120<br><span style="font-size:12px">Moves: <b><span id="moves">20</span></b> • 5000 Coins = $0.05 USDT • Level Win = 50 Coins</span><div class="progress"><div id="bar"></div></div></div>
+<div class="top">🪙 <b><span id="coins">0</span> Coins</b> • Level <span id="level">1</span> • ⭐ <span id="score">0</span>/300<br><span style="font-size:12px">Moves: <b><span id="moves">25</span></b> • 5000 Coins = $0.05 USDT • Level Win = 50 Coins</span><div class="progress"><div id="bar"></div></div><div id="barLabel" style="font-size:12px;font-weight:bold;color:#ff006e">Keep matching! Sweet progress...</div></div>
 <div class="nav"><button onclick="show('game')" id="b-game" class="on">🍬 Play</button><button onclick="show('refer')" id="b-refer">👥 Refer</button><button onclick="show('cash')" id="b-cash">💰 Cashout</button><button onclick="show('shop')" id="b-shop">🛒 Shop</button></div>
 
 <div id="game" class="tab active"><div id="board"></div>
-<div class="box"><p><b>How to play:</b> Tap 2 candies to swap. Match 3+ = POP + SOUND + MUSIC!</p>
+<div class="box"><p><b>How to play:</b> Tap 2 sweets to swap. Match 3+ = BLAST + SOUND! Match 4 = Tasty Blast! Match 5 = Divine Blast!</p>
 <button onclick="watchAd(false)">📺 Watch Ad +10 Moves</button>
 <button class="gold" onclick="daily()">🎁 Daily Bonus +30 Coins</button>
 <button onclick="shuffleBoard()">🔀 Shuffle Board - Free</button>
@@ -64,63 +73,73 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <div id="adModal"><div class="adBox"><h3 style="color:#ff006e">🎉 LEVEL COMPLETE!</h3><p>You earned <b>50 Coins</b>!</p><div class="adScreen">📺 Sponsored Ad Playing...<br>🍬 Try Sweet Candy Blast!<br><small>Your reward is loading...</small></div><p id="adTimer" style="font-weight:bold">Please watch ad: 5s</p><button id="claimBtn" disabled onclick="claimReward()">🔒 Watch Ad First...</button><p class="small">You must watch the full ad to get your 50 Coins. This is compulsory.</p></div></div>
 
 <script>
-let candies=['🍬','🍭','🍫','🍩','🧁','🍪','💎'];
+let candies=['🍭','🧸','🍬','🍫','🍦','🍨','🍡'];
 let W=7,H=7;
+let TARGET=300;
 let coins=parseInt(localStorage.getItem('cm_coins')||'0');
 let level=parseInt(localStorage.getItem('cm_level')||'1');
 let refs=parseInt(localStorage.getItem('cm_refs')||'0');
 let refEarn=parseInt(localStorage.getItem('cm_refEarn')||'0');
-let score=0,moves=20,board=[],sel=null,busy=false,pendingCoins=0;
+let score=0,moves=20,board=[],sel=null,busy=false,pendingCoins=0,combo=0,lastMatchTime=0;
 let myCode=localStorage.getItem('cm_code')||('CANDY'+Math.floor(Math.random()*9000+1000));
 localStorage.setItem('cm_code',myCode);
-
-// ===== SOUND + MUSIC SYSTEM =====
 let audioCtx=null, musicOn=true, musicTimer=null, musicNote=0;
 function getCtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+function showCombo(text){ let p=document.getElementById('comboPop'); p.textContent=text; p.classList.add('show'); setTimeout(()=>p.classList.remove('show'),900); }
+function blastEffect(x,y){
+  let b=document.getElementById('board'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+  let colors=['#ff006e','#ffb300','#00e5ff','#7CFF00','#ffea00','#ff6ec7'];
+  for(let i=0;i<18;i++){ let s=document.createElement('div'); s.className='particle'; s.style.background=colors[i%colors.length]; s.style.left=x+'px'; s.style.top=y+'px'; let ang=Math.random()*Math.PI*2, dist=60+Math.random()*90; s.style.setProperty('--dx',Math.cos(ang)*dist+'px'); s.style.setProperty('--dy',Math.sin(ang)*dist+'px'); document.body.appendChild(s); setTimeout(()=>s.remove(),750); }
+}
 function playSound(type){
   try{
-    let ctx=getCtx(); let o=ctx.createOscillator(), g=ctx.createGain(); o.connect(g); g.connect(ctx.destination);
-    if(type==='pop'){ // CANDY POP - 2 quick pops
-      o.type='sine'; o.frequency.setValueAtTime(500,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(1100,ctx.currentTime+0.08); g.gain.setValueAtTime(0.25,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.18); o.start(); o.stop(ctx.currentTime+0.2);
-      setTimeout(()=>{ let o2=ctx.createOscillator(), g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.type='sine'; o2.frequency.setValueAtTime(800,ctx.currentTime); o2.frequency.exponentialRampToValueAtTime(1600,ctx.currentTime+0.08); g2.gain.setValueAtTime(0.2,ctx.currentTime); g2.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.15); o2.start(); o2.stop(ctx.currentTime+0.16); },60);
+    let ctx=getCtx();
+    if(type==='blast'){
+      let dur=0.45, buf=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate), d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2); }
+      let src=ctx.createBufferSource(); src.buffer=buf; let g=ctx.createGain(); g.gain.setValueAtTime(0.45,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+dur); let f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(1200,ctx.currentTime); f.frequency.exponentialRampToValueAtTime(120,ctx.currentTime+dur); src.connect(f); f.connect(g); g.connect(ctx.destination); src.start();
+      let o=ctx.createOscillator(), g2=ctx.createGain(); o.connect(g2); g2.connect(ctx.destination); o.type='sine'; o.frequency.setValueAtTime(180,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(40,ctx.currentTime+0.35); g2.gain.setValueAtTime(0.4,ctx.currentTime); g2.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.4); o.start(); o.stop(ctx.currentTime+0.4);
+      let o2=ctx.createOscillator(), g3=ctx.createGain(); o2.connect(g3); g3.connect(ctx.destination); o2.type='triangle'; o2.frequency.setValueAtTime(900,ctx.currentTime); o2.frequency.exponentialRampToValueAtTime(2200,ctx.currentTime+0.12); g3.gain.setValueAtTime(0.15,ctx.currentTime); g3.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.2); o2.start(); o2.stop(ctx.currentTime+0.22);
+      return;
     }
+    let o=ctx.createOscillator(), g=ctx.createGain(); o.connect(g); g.connect(ctx.destination);
+    if(type==='pop'){ o.type='sine'; o.frequency.setValueAtTime(500,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(1100,ctx.currentTime+0.08); g.gain.setValueAtTime(0.25,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.18); o.start(); o.stop(ctx.currentTime+0.2); setTimeout(()=>{ let o2=ctx.createOscillator(), g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.type='sine'; o2.frequency.setValueAtTime(800,ctx.currentTime); o2.frequency.exponentialRampToValueAtTime(1600,ctx.currentTime+0.08); g2.gain.setValueAtTime(0.2,ctx.currentTime); g2.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.15); o2.start(); o2.stop(ctx.currentTime+0.16); },60); }
     if(type==='swap'){ o.type='triangle'; o.frequency.setValueAtTime(350,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(550,ctx.currentTime+0.1); g.gain.setValueAtTime(0.18,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.12); o.start(); o.stop(ctx.currentTime+0.13); }
     if(type==='click'){ o.type='sine'; o.frequency.value=900; g.gain.setValueAtTime(0.12,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.06); o.start(); o.stop(ctx.currentTime+0.07); }
     if(type==='win'){ [523,659,784,1046,784,1046].forEach((f,i)=>{ let o2=ctx.createOscillator(), g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.type='sine'; o2.frequency.value=f; g2.gain.setValueAtTime(0.22,ctx.currentTime+i*0.13); g2.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+i*0.13+0.25); o2.start(ctx.currentTime+i*0.13); o2.stop(ctx.currentTime+i*0.13+0.26); }); }
     if(type==='coin'){ [880,1320].forEach((f,i)=>{ let o2=ctx.createOscillator(), g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.type='sine'; o2.frequency.value=f; g2.gain.setValueAtTime(0.2,ctx.currentTime+i*0.09); g2.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+i*0.09+0.15); o2.start(ctx.currentTime+i*0.09); o2.stop(ctx.currentTime+i*0.09+0.16); }); }
   }catch(e){}
 }
-// BACKGROUND MUSIC - Sweet Candy Melody Loop
 let melody=[523,659,784,659, 880,784,659,523, 523,659,784,880, 1046,880,784,659];
-function playMusicNote(){
-  if(!musicOn) return;
-  try{
-    let ctx=getCtx(); let f=melody[musicNote%melody.length]; musicNote++;
-    let o=ctx.createOscillator(), g=ctx.createGain(); o.connect(g); g.connect(ctx.destination);
-    o.type='triangle'; o.frequency.value=f; g.gain.setValueAtTime(0.08,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.35); o.start(); o.stop(ctx.currentTime+0.36);
-    // Bass note
-    let o2=ctx.createOscillator(), g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.type='sine'; o2.frequency.value=f/4; g2.gain.setValueAtTime(0.04,ctx.currentTime); g2.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.35); o2.start(); o2.stop(ctx.currentTime+0.36);
-  }catch(e){}
-}
+function playMusicNote(){ if(!musicOn) return; try{ let ctx=getCtx(); let f=melody[musicNote%melody.length]; musicNote++; let o=ctx.createOscillator(), g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.type='triangle'; o.frequency.value=f; g.gain.setValueAtTime(0.08,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.35); o.start(); o.stop(ctx.currentTime+0.36); let o2=ctx.createOscillator(), g2=ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.type='sine'; o2.frequency.value=f/4; g2.gain.setValueAtTime(0.04,ctx.currentTime); g2.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.35); o2.start(); o2.stop(ctx.currentTime+0.36); }catch(e){} }
 function startMusic(){ if(musicTimer) clearInterval(musicTimer); musicTimer=setInterval(playMusicNote,380); }
 function toggleMusic(){ musicOn=!musicOn; document.getElementById('musicBtn').textContent=musicOn?'🎵':'🔇'; if(musicOn){ startMusic(); playSound('coin'); } else { if(musicTimer) clearInterval(musicTimer); } }
-// Start music on first tap (browser rule)
 document.addEventListener('click',()=>{ if(musicOn && !musicTimer) startMusic(); },{once:true});
-
 function save(){localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);update();}
-function update(){document.getElementById('coins').textContent=coins;document.getElementById('coins2').textContent=coins;document.getElementById('usd').textContent=(coins/100000).toFixed(4);document.getElementById('level').textContent=level;document.getElementById('score').textContent=score;document.getElementById('moves').textContent=moves;document.getElementById('refs').textContent=refs;document.getElementById('refEarn').textContent=refEarn;document.getElementById('bar').style.width=Math.min(100,score/120*100)+'%';document.getElementById('refLink').value=location.href.split('?')[0]+'?ref='+myCode;}
+function update(){document.getElementById('coins').textContent=coins;document.getElementById('coins2').textContent=coins;document.getElementById('usd').textContent=(coins/100000).toFixed(4);document.getElementById('level').textContent=level;document.getElementById('score').textContent=score;document.getElementById('moves').textContent=moves;document.getElementById('refs').textContent=refs;document.getElementById('refEarn').textContent=refEarn;document.getElementById('bar').style.width=Math.min(100,score/TARGET*100)+'%';let pct=Math.round(score/TARGET*100);let lbl=document.getElementById('barLabel'); if(pct>=90) lbl.textContent='🔥 Almost there! '+pct+'%'; else if(pct>=50) lbl.textContent='💪 Halfway! '+pct+'% - Keep going!'; else if(pct>=25) lbl.textContent='🍬 Sweet progress! '+pct+'%'; else lbl.textContent='Keep matching! Sweet progress...';document.getElementById('refLink').value=location.href.split('?')[0]+'?ref='+myCode;}
 function show(t){playSound('click');document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('on'));document.getElementById('b-'+t).classList.add('on');}
 function rand(){return candies[Math.floor(Math.random()*candies.length)];}
 function make(){board=[];for(let i=0;i<W*H;i++)board.push(rand());while(findMatches().size>0){findMatches().forEach(i=>board[i]=rand());}draw();}
 function draw(){let b=document.getElementById('board');b.innerHTML='';board.forEach((c,i)=>{let d=document.createElement('div');d.className='cell'+(sel===i?' sel':'');d.textContent=c;d.onclick=()=>tap(i);b.appendChild(d);});update();}
 function idx(r,c){return r*W+c;}
 function findMatches(){let s=new Set();for(let r=0;r<H;r++)for(let c=0;c<W-2;c++){let i=idx(r,c);if(board[i]&&board[i]===board[i+1]&&board[i]===board[i+2]){s.add(i);s.add(i+1);s.add(i+2);}}for(let c=0;c<W;c++)for(let r=0;r<H-2;r++){let i=idx(r,c);if(board[i]&&board[i]===board[idx(r+1,c)]&&board[i]===board[idx(r+2,c)]){s.add(i);s.add(idx(r+1,c));s.add(idx(r+2,c));}}return s;}
-function tap(i){if(busy)return;if(sel===null){sel=i;playSound('click');draw();return;}let a=sel;sel=null;let ra=Math.floor(a/W),ca=a%W,rb=Math.floor(i/W),cb=i%W;if(Math.abs(ra-rb)+Math.abs(ca-cb)!==1){draw();return;}playSound('swap');let t=board[a];board[a]=board[i];board[i]=t;moves--;draw();let m=findMatches();if(m.size===0){setTimeout(()=>{let t2=board[a];board[a]=board[i];board[i]=t2;draw();},250);}else{busy=true;setTimeout(()=>resolve(),300);}if(moves<=0&&m.size===0){setTimeout(()=>{alert('Out of Moves! Score: '+score);score=0;moves=20;make();},500);}checkWin();}
-function resolve(){let m=findMatches();if(m.size===0){busy=false;draw();checkWin();return;}playSound('pop');score+=m.size*10;m.forEach(i=>{let el=document.querySelectorAll('.cell')[i];if(el)el.classList.add('pop');});setTimeout(()=>{m.forEach(i=>board[i]=null);fall();draw();document.querySelectorAll('.cell').forEach(e=>e.classList.add('fall'));setTimeout(resolve,350);},300);}
+function tap(i){if(busy)return;if(sel===null){sel=i;playSound('click');draw();return;}let a=sel;sel=null;let ra=Math.floor(a/W),ca=a%W,rb=Math.floor(i/W),cb=i%W;if(Math.abs(ra-rb)+Math.abs(ca-cb)!==1){draw();return;}playSound('swap');let t=board[a];board[a]=board[i];board[i]=t;moves--;draw();let m=findMatches();if(m.size===0){setTimeout(()=>{let t2=board[a];board[a]=board[i];board[i]=t2;draw();},250);}else{busy=true;setTimeout(()=>resolve(),300);}if(moves<=0&&m.size===0){setTimeout(()=>{alert('Out of Moves! Score: '+score);score=0;moves=25;make();},500);}checkWin();}
+function resolve(){let m=findMatches();if(m.size===0){busy=false;draw();checkWin();return;}
+let now=Date.now(); if(now-lastMatchTime<2500) combo++; else combo=1; lastMatchTime=now;
+let isBig=m.size>=5, isMed=m.size===4;
+if(isBig){ showCombo('💥 Divine! + Bonus!'); playSound('blast'); }
+else if(isMed){ showCombo('😋 Tasty!'); playSound('blast'); }
+else { showCombo(combo>1?'🔥 Combo x'+combo+' Sweet!':'Sweet!'); playSound('pop'); setTimeout(()=>playSound('blast'),120); }
+if(isMed||isBig){ let extra=new Set(m); m.forEach(i=>{ let r=Math.floor(i/W), c=i%W; [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([rr,cc])=>{ if(rr>=0&&rr<H&&cc>=0&&cc<W) extra.add(idx(rr,cc)); }); }); m=extra; }
+let firstEl=document.querySelectorAll('.cell')[Array.from(m)[0]]; if(firstEl){ let rect=firstEl.getBoundingClientRect(); blastEffect(rect.left+rect.width/2, rect.top+rect.height/2); }
+score+=m.size*10;
+if(combo>1) score+=5;
+m.forEach(i=>{let el=document.querySelectorAll('.cell')[i];if(el)el.classList.add(isBig||isMed?'blast':'pop');});
+setTimeout(()=>{m.forEach(i=>board[i]=null);fall();draw();document.querySelectorAll('.cell').forEach(e=>e.classList.add('fall'));setTimeout(resolve,350);},350);}
 function fall(){for(let c=0;c<W;c++){let col=[];for(let r=H-1;r>=0;r--){let v=board[idx(r,c)];if(v)col.push(v);}for(let r=H-1;r>=0;r--){board[idx(r,c)]=col[H-1-r]||rand();}}}
-function checkWin(){if(score>=120){pendingCoins=50;playSound('win');setTimeout(()=>{showCompulsoryAd();},400);}}
+function checkWin(){if(score>=TARGET){pendingCoins=50;playSound('win');setTimeout(()=>{showCompulsoryAd();},400);}}
 function showCompulsoryAd(){document.getElementById('adModal').classList.add('show');let s=5;let btn=document.getElementById('claimBtn');btn.disabled=true;btn.textContent='🔒 Watch Ad First...';document.getElementById('adTimer').textContent='Please watch ad: '+s+'s';let iv=setInterval(()=>{s--;document.getElementById('adTimer').textContent=s>0?'Please watch ad: '+s+'s':'✅ Ad Finished! Claim Now!';if(s<=0){clearInterval(iv);btn.disabled=false;btn.textContent='🎁 Claim 50 Coins Now';playSound('win');}},1000);}
-function claimReward(){coins+=pendingCoins;level++;score=0;moves=20;save();playSound('coin');document.getElementById('adModal').classList.remove('show');alert('🎉 +50 Coins Claimed! Total: '+coins+' Coins - Level '+level);make();}
+function claimReward(){coins+=pendingCoins;level++;score=0;moves=25;combo=0;save();playSound('coin');document.getElementById('adModal').classList.remove('show');alert('🎉 +50 Coins Claimed! Total: '+coins+' Coins - Level '+level);make();}
 function shuffleBoard(){playSound('swap');for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;}draw();}
 function watchAd(){let s=5;let btn=event.target;let old=btn.textContent;btn.disabled=true;let iv=setInterval(()=>{btn.textContent='⏳ Ad Playing... '+s+'s';s--;if(s<0){clearInterval(iv);moves+=10;update();btn.disabled=false;btn.textContent=old;playSound('win');alert('+10 Moves Added!');}},1000);}
 function daily(){let last=localStorage.getItem('cm_daily');let today=new Date().toDateString();if(last===today){alert('Already claimed today! Come tomorrow');return;}localStorage.setItem('cm_daily',today);coins+=30;save();playSound('coin');alert('+30 Daily Bonus! Total: '+coins);}
@@ -128,7 +147,7 @@ function copyRef(){let e=document.getElementById('refLink');e.select();document.
 function withdraw(){let a=document.getElementById('acct').value.trim();let n=document.getElementById('name').value.trim();if(coins<5000){document.getElementById('wmsg').textContent='Need 5000 Coins ($0.05 USDT). You have '+coins;return;}if(!a||!n){document.getElementById('wmsg').textContent='Enter Name + BEP20 Wallet Address';return;}if(!a.startsWith('0x')||a.length<20){document.getElementById('wmsg').textContent='⚠️ Invalid BEP20 Address - Must start with 0x';return;}playSound('coin');document.getElementById('wmsg').textContent='✅ Request Sent! $'+(coins/100000).toFixed(4)+' USDT BEP20 to '+a+' ('+n+'). Review in 24-48h.';}
 function buyMoves(){if(coins<5){document.getElementById('shopMsg').textContent='Need 5 Coins! You have '+coins;return;}coins-=5;moves+=10;save();playSound('coin');let m=document.getElementById('shopMsg');if(m)m.textContent='✅ +10 Moves bought for 5 Coins!';alert('+10 Moves! -5 Coins. Balance: '+coins);}
 function buyShuffle(){if(coins<30){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=30;save();shuffleBoard();document.getElementById('shopMsg').textContent='Board shuffled!';}
-function buyBomb(){if(coins<100){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=100;save();let r=Math.floor(Math.random()*H);for(let c=0;c<W;c++)board[idx(r,c)]=rand();score+=30;playSound('pop');draw();document.getElementById('shopMsg').textContent='BOOM! Row cleared!';}
+function buyBomb(){if(coins<100){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=100;save();let r=Math.floor(Math.random()*H);for(let c=0;c<W;c++)board[idx(r,c)]=rand();score+=30;playSound('blast');blastEffect(window.innerWidth/2, window.innerHeight/2);draw();document.getElementById('shopMsg').textContent='💥 BOOM! Row cleared!';}
 let p=new URLSearchParams(location.search);if(p.get('ref')&&!localStorage.getItem('cm_got_ref')){localStorage.setItem('cm_got_ref','1');coins+=20;save();alert('Welcome! +20 Coins for referral link!');}
 make();
 </script>
