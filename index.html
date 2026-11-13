@@ -1,75 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CoinMatch - Match 3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>CoinMatch - Candy Crush Earn</title>
 <style>
-body{font-family:Arial;text-align:center;background:#1a1a2e;color:white;margin:0;padding:10px}
-h1{color:#ffd700;margin:5px}
-.box{background:#16213e;border-radius:15px;padding:10px;margin:10px auto;max-width:360px}
-#board{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;max-width:360px;margin:10px auto}
-.cell{font-size:28px;background:#0f3460;border-radius:10px;padding:10px 0;cursor:pointer}
-.cell.sel{outline:3px solid yellow;background:#e94560}
-button{background:#ffd700;border:none;padding:10px 15px;border-radius:10px;font-weight:bold;margin:5px;cursor:pointer}
+*{box-sizing:border-box}
+body{font-family:Arial;text-align:center;background:linear-gradient(180deg,#ff5da2,#ff9ecb,#ffd6ea);color:#4a0033;margin:0;padding:8px;min-height:100vh}
+h1{color:white;margin:5px;font-size:28px;text-shadow:2px 2px 0 #ff006e}
+.top{background:white;border-radius:20px;padding:10px;margin:8px auto;max-width:400px;box-shadow:0 5px 20px rgba(255,0,110,.3);border:3px solid #ff006e}
+.top b{color:#ff006e;font-size:18px}
+.progress{background:#ffe6f2;height:14px;border-radius:10px;overflow:hidden;margin:8px 0}
+#bar{height:100%;background:linear-gradient(90deg,#ff006e,#ffb300);width:0%;transition:.4s}
+#board{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:400px;margin:10px auto;background:rgba(255,255,255,.9);padding:8px;border-radius:20px;border:3px solid white;box-shadow:0 5px 20px rgba(0,0,0,.2)}
+.cell{font-size:30px;background:linear-gradient(180deg,#fff,#ffd6ea);border-radius:14px;padding:8px 0;cursor:pointer;box-shadow:0 2px 0 #ff9ecb;transition:.15s}
+.cell.sel{outline:3px solid #ff006e;background:#ff006e;transform:scale(1.15);z-index:2}
+.cell.pop{animation:pop .3s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1)}}
+button{background:linear-gradient(180deg,#ff006e,#c8005a);color:white;border:none;padding:12px;border-radius:25px;font-weight:bold;margin:5px;cursor:pointer;width:92%;font-size:15px;box-shadow:0 4px 0 #8a0040}
+button:active{transform:translateY(2px);box-shadow:0 2px 0 #8a0040}
+button.gold{background:linear-gradient(180deg,#ffb300,#ff8f00);box-shadow:0 4px 0 #b25f00;color:#4a0033}
+input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:5px;text-align:center;background:#fff0f7;font-size:15px}
+.tab{display:none}.tab.active{display:block}
+.nav{display:flex;gap:6px;max-width:400px;margin:0 auto}
+.nav button{flex:1;width:auto;padding:10px 2px;font-size:13px;background:white;color:#ff006e;box-shadow:0 3px 0 #ffb3d1}
+.nav button.on{background:#ff006e;color:white}
+.box{background:white;border-radius:20px;padding:14px;margin:10px auto;max-width:400px;box-shadow:0 5px 15px rgba(0,0,0,.1)}
+.small{font-size:12px;color:#888}
+.candy-row{font-size:22px}
 </style>
 </head>
 <body>
-<h1>🪙 CoinMatch</h1>
-<div class="box">
-🪙 <span id="coins">0</span> Coins | Level <span id="level">1</span><br><br>
-Score: <span id="score">0</span> / 100<br>
-Moves: <span id="moves">15</span>
-</div>
-<div id="board"></div>
-<div class="box">
-<p>Tap 2 fruits to swap. Match 3 same = +10 Score.</p>
-<button onclick="addMoves()">📺 Watch Ad - Get +10 Moves</button><br>
-<button onclick="location.reload()">🔄 Restart</button>
-</div>
+<h1>🍬 CoinMatch 🍭</h1>
+<div class="top">🪙 <b><span id="coins">0</span> Coins</b> • Level <span id="level">1</span> • ⭐ <span id="score">0</span>/120<br><span style="font-size:12px">Moves: <b><span id="moves">20</span></b> • 100 Coins = ₦100</span><div class="progress"><div id="bar"></div></div></div>
+<div class="nav"><button onclick="show('game')" id="b-game" class="on">🍬 Play</button><button onclick="show('refer')" id="b-refer">👥 Refer</button><button onclick="show('cash')" id="b-cash">💰 Cashout</button><button onclick="show('shop')" id="b-shop">🛒 Shop</button></div>
+
+<div id="game" class="tab active"><div id="board"></div>
+<div class="box"><div class="candy-row">🍬 🍭 🍫 🍩 🧁 🍪 💎</div><p><b>How to play:</b> Tap 2 candies to swap. Match 3+ in a row = pop + score!</p>
+<button onclick="watchAd()">📺 Watch Ad +10 Moves</button>
+<button class="gold" onclick="daily()">🎁 Daily Bonus +30 Coins</button>
+<button onclick="shuffleBoard()">🔀 Shuffle Board - Free</button>
+</div></div>
+
+<div id="refer" class="tab"><div class="box"><h3 style="color:#ff006e">👥 Refer & Earn</h3><p>Share link. Friend joins = <b>You get +20 Coins</b><br>Friend also gets +20 Coins!</p><input id="refLink" readonly><br><button onclick="copyRef()">📋 Copy My Link</button><p>Friends: <b><span id="refs">0</span></b> • Earned: <b><span id="refEarn">0</span> Coins</b></p></div></div>
+
+<div id="cash" class="tab"><div class="box"><h3 style="color:#ff006e">💰 Cashout</h3><p>Balance: <b><span id="coins2">0</span> Coins</b> = ₦<span id="naira">0</span></p><p class="small">Min Withdraw: 5000 Coins = ₦5000</p><input id="acct" placeholder="Opay / Palmpay / Bank Number"><br><input id="name" placeholder="Your Full Name"><br><button onclick="withdraw()">Request Withdrawal</button><p id="wmsg"></p><p class="small">Withdrawals are reviewed in 24h. You must play real games to earn.</p></div></div>
+
+<div id="shop" class="tab"><div class="box"><h3 style="color:#ff006e">🛒 Candy Shop</h3><p>Use coins to buy power-ups</p><button onclick="buyExtra()">➕ +10 Moves - 50 Coins</button><button onclick="buyShuffle()">🔀 Extra Shuffle - 30 Coins</button><button onclick="buyBomb()">💣 Bomb - Clear 1 Row - 100 Coins</button><p id="shopMsg"></p></div></div>
+
 <script>
-let fruits=['🍎','🍌','🍇','🍊','🍓','🥝'];
-let board=[], score=0, moves=15, coins=0, level=1, sel=null;
-function make(){
-  board=[];
-  for(let i=0;i<36;i++) board.push(fruits[Math.floor(Math.random()*fruits.length)]);
-  draw();
-}
-function draw(){
-  let b=document.getElementById('board'); b.innerHTML='';
-  board.forEach((f,i)=>{
-    let d=document.createElement('div');
-    d.className='cell'+(sel===i?' sel':'');
-    d.textContent=f;
-    d.onclick=()=>tap(i);
-    b.appendChild(d);
-  });
-  document.getElementById('score').textContent=score;
-  document.getElementById('moves').textContent=moves;
-  document.getElementById('coins').textContent=coins;
-  document.getElementById('level').textContent=level;
-}
-function tap(i){
-  if(sel===null){sel=i; draw(); return;}
-  let a=sel; sel=null;
-  let tmp=board[a]; board[a]=board[i]; board[i]=tmp;
-  moves--; check();
-  draw();
-  if(moves<=0) alert('Game Over! Score: '+score);
-  if(score>=100){ coins+=50; level++; score=0; moves=15; alert('Level Complete! +50 Coins!'); draw(); }
-}
-function check(){
-  for(let r=0;r<6;r++) for(let c=0;c<4;c++){
-    let i=r*6+c;
-    if(board[i]===board[i+1] && board[i]===board[i+2]){
-      score+=10;
-      board[i]=fruits[Math.floor(Math.random()*fruits.length)];
-      board[i+1]=fruits[Math.floor(Math.random()*fruits.length)];
-      board[i+2]=fruits[Math.floor(Math.random()*fruits.length)];
-    }
-  }
-}
-function addMoves(){ moves+=10; draw(); alert('+10 Moves Added!'); }
+let candies=['🍬','🍭','🍫','🍩','🧁','🍪','💎'];
+let W=7,H=7;
+let coins=parseInt(localStorage.getItem('cm_coins')||'0');
+let level=parseInt(localStorage.getItem('cm_level')||'1');
+let refs=parseInt(localStorage.getItem('cm_refs')||'0');
+let refEarn=parseInt(localStorage.getItem('cm_refEarn')||'0');
+let score=0,moves=20,board=[],sel=null,busy=false;
+let myCode=localStorage.getItem('cm_code')||('CANDY'+Math.floor(Math.random()*9000+1000));
+localStorage.setItem('cm_code',myCode);
+function save(){localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);update();}
+function update(){document.getElementById('coins').textContent=coins;document.getElementById('coins2').textContent=coins;document.getElementById('naira').textContent=coins;document.getElementById('level').textContent=level;document.getElementById('score').textContent=score;document.getElementById('moves').textContent=moves;document.getElementById('refs').textContent=refs;document.getElementById('refEarn').textContent=refEarn;document.getElementById('bar').style.width=Math.min(100,score/120*100)+'%';document.getElementById('refLink').value=location.href.split('?')[0]+'?ref='+myCode;}
+function show(t){document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('on'));document.getElementById('b-'+t).classList.add('on');}
+function rand(){return candies[Math.floor(Math.random()*candies.length)];}
+function make(){board=[];for(let i=0;i<W*H;i++)board.push(rand());while(findMatches().size>0){findMatches().forEach(i=>board[i]=rand());}draw();}
+function draw(){let b=document.getElementById('board');b.innerHTML='';board.forEach((c,i)=>{let d=document.createElement('div');d.className='cell'+(sel===i?' sel':'');d.textContent=c;d.onclick=()=>tap(i);b.appendChild(d);});update();}
+function idx(r,c){return r*W+c;}
+function findMatches(){let s=new Set();for(let r=0;r<H;r++)for(let c=0;c<W-2;c++){let i=idx(r,c);if(board[i]&&board[i]===board[i+1]&&board[i]===board[i+2]){s.add(i);s.add(i+1);s.add(i+2);}}for(let c=0;c<W;c++)for(let r=0;r<H-2;r++){let i=idx(r,c);if(board[i]&&board[i]===board[idx(r+1,c)]&&board[i]===board[idx(r+2,c)]){s.add(i);s.add(idx(r+1,c));s.add(idx(r+2,c));}}return s;}
+function tap(i){if(busy)return;if(sel===null){sel=i;draw();return;}let a=sel;sel=null;let ra=Math.floor(a/W),ca=a%W,rb=Math.floor(i/W),cb=i%W;if(Math.abs(ra-rb)+Math.abs(ca-cb)!==1){draw();return;}let t=board[a];board[a]=board[i];board[i]=t;moves--;draw();let m=findMatches();if(m.size===0){setTimeout(()=>{let t2=board[a];board[a]=board[i];board[i]=t2;draw();},250);}else{busy=true;setTimeout(()=>resolve(),300);}if(moves<=0&&m.size===0){setTimeout(()=>{alert('💔 Out of Moves! Score: '+score);score=0;moves=20;make();},500);}checkWin();}
+function resolve(){let m=findMatches();if(m.size===0){busy=false;draw();checkWin();return;}score+=m.size*10;m.forEach(i=>{let el=document.querySelectorAll('.cell')[i];if(el)el.classList.add('pop');});setTimeout(()=>{m.forEach(i=>board[i]=null);fall();draw();setTimeout(resolve,350);},250);}
+function fall(){for(let c=0;c<W;c++){let col=[];for(let r=H-1;r>=0;r--){let v=board[idx(r,c)];if(v)col.push(v);}for(let r=H-1;r>=0;r--){board[idx(r,c)]=col[H-1-r]||rand();}}}
+function checkWin(){if(score>=120){coins+=80;level++;score=0;moves=20;save();setTimeout(()=>{alert('🎉 LEVEL COMPLETE! +80 Coins! You now have '+coins+' Coins');make();},400);}}
+function shuffleBoard(){for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;}draw();}
+function watchAd(){let s=5;let btn=event.target;btn.textContent='⏳ Ad Playing... '+s+'s';let iv=setInterval(()=>{s--;btn.textContent='⏳ Ad Playing... '+s+'s';if(s<=0){clearInterval(iv);moves+=10;update();btn.textContent='📺 Watch Ad +10 Moves';alert('+10 Moves Added!');}},1000);}
+function daily(){let last=localStorage.getItem('cm_daily');let today=new Date().toDateString();if(last===today){alert('Already claimed today! Come tomorrow 💖');return;}localStorage.setItem('cm_daily',today);coins+=30;save();alert('+30 Daily Bonus! Total: '+coins);}
+function copyRef(){let e=document.getElementById('refLink');e.select();document.execCommand('copy');alert('Link Copied! Share to WhatsApp 💖');}
+function withdraw(){let a=document.getElementById('acct').value;let n=document.getElementById('name').value;if(coins<5000){document.getElementById('wmsg').textContent='❌ Need 5000 Coins. You have '+coins;return;}if(!a||!n){document.getElementById('wmsg').textContent='Enter Name + Account Number';return;}document.getElementById('wmsg').textContent='✅ Request Sent! '+coins+' Coins to '+a+' ('+n+'). Review in 24h.';}
+function buyExtra(){if(coins<50){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=50;moves+=10;save();document.getElementById('shopMsg').textContent='✅ +10 Moves bought!';}
+function buyShuffle(){if(coins<30){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=30;save();shuffleBoard();document.getElementById('shopMsg').textContent='✅ Board shuffled!';}
+function buyBomb(){if(coins<100){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=100;save();let r=Math.floor(Math.random()*H);for(let c=0;c<W;c++)board[idx(r,c)]=rand();score+=30;draw();document.getElementById('shopMsg').textContent='💣 BOOM! Row cleared!';}
+let p=new URLSearchParams(location.search);if(p.get('ref')&&!localStorage.getItem('cm_got_ref')){localStorage.setItem('cm_got_ref','1');coins+=20;save();alert('Welcome! +20 Coins for referral link! 💖');}
 make();
 </script>
 </body>
-</html>
+                                                                                        </html>
