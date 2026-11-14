@@ -113,7 +113,6 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 let candies=['🍭','🧸','🍬','🍩','🧁'];
 let W=5,H=6;
 let TARGET=300;
-// FRESH START FOR NEW USERS
 let coins=parseInt(localStorage.getItem('cm_coins'));
 if(isNaN(coins)) coins=0;
 let level=parseInt(localStorage.getItem('cm_level'));
@@ -142,7 +141,6 @@ function startMusic(){ if(musicTimer) clearInterval(musicTimer); musicTimer=setI
 function toggleMusic(){ musicOn=!musicOn; document.getElementById('musicBtn').textContent=musicOn?'🎵':'🔇'; if(musicOn){ startMusic(); } else if(musicTimer) clearInterval(musicTimer); }
 document.addEventListener('click',()=>{ if(musicOn && !musicTimer) startMusic(); },{once:true});
 function save(){localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);localStorage.setItem('cm_hammer',hammer);localStorage.setItem('cm_bomb',bomb);update();}
-// FIXED UPDATE - SAFE, WILL NOT CRASH IF ELEMENT MISSING
 function setText(id,val){ let el=document.getElementById(id); if(el) el.textContent=val; }
 function update(){
 setText('coins',coins); setText('coins2',coins); setText('usd',(coins/100000).toFixed(4)); setText('level',level);
@@ -181,12 +179,27 @@ function resolve(isPlayer){
 }
 function fall(){ for(let c=0;c<W;c++){ let col=[]; for(let r=H-1;r>=0;r--){let v=board[idx(r,c)]; if(v)col.push(v);} for(let r=H-1,k=0;r>=0;r--,k++){ board[idx(r,c)]=k<col.length?col[k]:rand(); } } }
 function checkWin(){if(score>=TARGET){pendingCoins=50;playSound('win');setTimeout(()=>showCompulsoryAd(),400);}}
-function showCompulsoryAd(){document.getElementById('adModal').classList.add('show');let s=5;let btn=document.getElementById('claimBtn');btn.disabled=true;btn.textContent='🔒 Watch Ad First...';document.getElementById('adTimer').textContent='Please watch ad: '+s+'s';let iv=setInterval(()=>{s--;document.getElementById('adTimer').textContent=s>0?'Please watch ad: '+s+'s':'✅ Ad Finished! Claim Now!';if(s<=0){clearInterval(iv);btn.disabled=false;btn.textContent='🎁 Claim 50 Coins Now';playSound('win');}},1000);}
+// 1. IN-APP INTERSTITIAL - AFTER WIN
+function showCompulsoryAd(){
+  show_12265436().then(() => {
+    claimReward();
+  }).catch(e => {
+    claimReward();
+  });
+}
 function claimReward(){coins+=pendingCoins;level++;score=0;moves=18;combo=0;hammer=3; bomb=1;setNewTarget();save();playSound('coin');document.getElementById('adModal').classList.remove('show');showPopup('🎉 +50 Coins! Total: '+coins+' - Level '+level+' - Hammer x3 + Bomb x1 Refilled!');make();startTimer();}
 function shuffleBoard(){playSound('swap');for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;}draw();}
 function useHammer(){ if(hammer<=0){showPopup('No Hammer left! Buy one in Shop or win a level to refill.');return;} hammer--; save(); showPopup('Tap a candy to smash it with Hammer!'); let cells=document.querySelectorAll('.cell'); cells.forEach((el,i)=>{ el.onclick=()=>{ if(board[i]===targetCandy) targetCleared++; board[i]=rand(); playSound('blast'); draw(); document.querySelectorAll('.cell').forEach((e2,j)=>e2.onclick=()=>tap(j)); }; }); update(); }
 function useBomb(){ if(bomb<=0){showPopup('No Color Bomb left! Buy one in Shop or win a level to refill.');return;} bomb--; let c=candies[Math.floor(Math.random()*candies.length)]; let cleared=0; board.forEach((v,i)=>{ if(v===c){ if(v===targetCandy) targetCleared++; board[i]=rand(); cleared++; } }); score+=cleared*10; playSound('blast'); draw(); showPopup('💥 Color Bomb cleared '+cleared+' candies!'); update(); save(); }
-function watchAd(){let s=5;let btn=event.target;let old=btn.textContent;btn.disabled=true;let iv=setInterval(()=>{btn.textContent='⏳ Ad Playing... '+s+'s';s--;if(s<0){clearInterval(iv);moves+=10;update();btn.disabled=false;btn.textContent=old;playSound('win');showPopup('+10 Moves Added!');}},1000);}
+// 2. REWARDED POPUP - BONUS BUTTON +10 MOVES
+function watchAd(){
+  let btn=event.target; let old=btn.textContent; btn.disabled=true; btn.textContent='⏳ Ad Playing...';
+  show_12265436('pop').then(() => {
+    moves+=10; update(); btn.disabled=false; btn.textContent=old; playSound('win'); showPopup('+10 Moves Added!');
+  }).catch(e => {
+    btn.disabled=false; btn.textContent=old; showPopup('Ad not ready, try again');
+  });
+}
 function daily(){let last=localStorage.getItem('cm_daily');let today=new Date().toDateString();if(last===today){showPopup('Already claimed today!');return;}localStorage.setItem('cm_daily',today);coins+=30;hammer=3; bomb=1;save();playSound('coin');showPopup('+30 Daily Bonus! Hammer x3 + Bomb x1 Refilled! Total: '+coins);}
 function copyRef(){let real=document.getElementById('realRefLink').value;try{navigator.clipboard.writeText(real);}catch(e){let e2=document.getElementById('realRefLink');e2.style.display='block';e2.select();document.execCommand('copy');e2.style.display='none';}showPopup('Link Copied!');}
 function withdraw(){
@@ -202,6 +215,17 @@ let p=new URLSearchParams(location.search);if(p.get('ref')&&!localStorage.getIte
 setNewTarget();
 make();
 startTimer();
+// 3. IN-APP INTERSTITIAL - AUTO ADS
+show_12265436({
+  type: 'inApp',
+  inAppSettings: {
+    frequency: 2,
+    capping: 0.1,
+    interval: 30,
+    timeout: 5,
+    everyPage: false
+  }
+})
 </script>
 </body>
 </html>
