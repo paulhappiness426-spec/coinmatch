@@ -69,7 +69,7 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <div id="myPopup"><div class="popupBox"><div id="popupText" style="font-size:17px;font-weight:800;line-height:1.5"></div><button onclick="closePopup()" style="background:linear-gradient(180deg,#ff2d95,#ff006e);color:white;border:none;padding:12px;border-radius:25px;font-weight:bold;width:100%;margin-top:14px;font-size:15px;cursor:pointer;box-shadow:0 4px 0 #8a0040">OK</button></div></div>
 
 <div class="topCard">
-<div class="topRow"><div class="coins"><span>🪙</span> <span id="coins">660</span> Coins</div><div class="lvl">Level <span id="level">17</span></div></div>
+<div class="topRow"><div class="coins"><span>🪙</span> <span id="coins">0</span> Coins</div><div class="lvl">Level <span id="level">1</span></div></div>
 <div class="timerRow">
 <div class="timerLeft" id="timerLeft">⏰ <span id="timeText">01:30</span></div>
 <div class="targetRight" id="targetRight">🎯 Clear <span class="tc" id="targetCandy">🍭</span> <span id="targetText">0 / 20</span></div>
@@ -112,8 +112,11 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 let candies=['🍭','🧸','🍬','🍩','🧁'];
 let W=5,H=6;
 let TARGET=300;
-let coins=parseInt(localStorage.getItem('cm_coins')||'660');
-let level=parseInt(localStorage.getItem('cm_level')||'17');
+// FRESH START FOR NEW USERS
+let coins=parseInt(localStorage.getItem('cm_coins'));
+if(isNaN(coins)) coins=0;
+let level=parseInt(localStorage.getItem('cm_level'));
+if(isNaN(level)) level=1;
 let refs=parseInt(localStorage.getItem('cm_refs')||'0');
 let refEarn=parseInt(localStorage.getItem('cm_refEarn')||'0');
 let score=0,moves=18,board=[],sel=null,busy=false,pendingCoins=0,combo=0,lastMatchTime=0,playerBlastUsed=false;
@@ -138,16 +141,21 @@ function startMusic(){ if(musicTimer) clearInterval(musicTimer); musicTimer=setI
 function toggleMusic(){ musicOn=!musicOn; document.getElementById('musicBtn').textContent=musicOn?'🎵':'🔇'; if(musicOn){ startMusic(); } else if(musicTimer) clearInterval(musicTimer); }
 document.addEventListener('click',()=>{ if(musicOn && !musicTimer) startMusic(); },{once:true});
 function save(){localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);localStorage.setItem('cm_hammer',hammer);localStorage.setItem('cm_bomb',bomb);update();}
-function update(){document.getElementById('coins').textContent=coins;document.getElementById('coins2').textContent=coins;document.getElementById('usd').textContent=(coins/100000).toFixed(4);document.getElementById('level').textContent=level;document.getElementById('score').textContent=score;document.getElementById('moves').textContent=moves;document.getElementById('moves2').textContent=moves;document.getElementById('refs').textContent=refs;document.getElementById('refEarn').textContent=refEarn;document.getElementById('hammerCount').textContent=hammer;document.getElementById('bombCount').textContent=bomb;
+// FIXED UPDATE - SAFE, WILL NOT CRASH IF ELEMENT MISSING
+function setText(id,val){ let el=document.getElementById(id); if(el) el.textContent=val; }
+function update(){
+setText('coins',coins); setText('coins2',coins); setText('usd',(coins/100000).toFixed(4)); setText('level',level);
+setText('score',score); setText('moves',moves); setText('moves2',moves); setText('refs',refs); setText('refEarn',refEarn);
+setText('hammerCount',hammer); setText('bombCount',bomb);
 let realLink=location.href.split('?')[0]+'?ref='+myCode;
 let prettyLink='https://candy-match.app/?ref='+myCode;
-document.getElementById('refLink').value=prettyLink;
-document.getElementById('realRefLink').value=realLink;
-document.getElementById('timeText').textContent=formatTime(timeLeft);
-document.getElementById('timerLeft').className='timerLeft'+(timeLeft<=15?' low':'');
-document.getElementById('targetCandy').textContent=targetCandy;
-document.getElementById('targetText').textContent=targetCleared+' / '+targetNeeded;
-document.getElementById('targetRight').className='targetRight'+(targetCleared>=targetNeeded?' done':'');
+let rl=document.getElementById('refLink'); if(rl) rl.value=prettyLink;
+let rrl=document.getElementById('realRefLink'); if(rrl) rrl.value=realLink;
+setText('timeText',formatTime(timeLeft));
+let tl=document.getElementById('timerLeft'); if(tl) tl.className='timerLeft'+(timeLeft<=15?' low':'');
+setText('targetCandy',targetCandy);
+setText('targetText',targetCleared+' / '+targetNeeded);
+let tr=document.getElementById('targetRight'); if(tr) tr.className='targetRight'+(targetCleared>=targetNeeded?' done':'');
 }
 function show(t){playSound('click');document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('on'));document.getElementById('b-'+t).classList.add('on');}
 function rand(){return candies[Math.floor(Math.random()*candies.length)];}
