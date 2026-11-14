@@ -15,16 +15,12 @@ background-attachment:fixed}
 .topRow .coins span{color:#ffb300;text-shadow:0 1px 0 #ffe08a}
 .topRow .lvl{font-size:24px;font-weight:900;color:#1e0a3a;white-space:nowrap}
 .topRow .lvl span{color:#ff006e}
-.progress{height:14px;background:#efe6ee;border-radius:99px;overflow:hidden;margin:14px 0 6px;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
-#bar{height:100%;width:0%;background:linear-gradient(90deg,#ffb300,#ff006e,#ff2d95);border-radius:99px;transition:width .6s ease;box-shadow:0 0 10px rgba(255,0,110,.5)}
-.progRow{display:flex;justify-content:space-between;font-size:13px;color:#4a3a52;font-weight:700}
-/* ONLY NEW STYLE - TIMER + TARGET ROW */
-.timerRow{display:flex;justify-content:space-between;align-items:center;margin:10px 0 2px;background:linear-gradient(180deg,#fff0f7,#ffe0ee);border:1px solid #ffd6e8;border-radius:99px;padding:7px 12px}
-.timerLeft{font-size:15px;font-weight:900;color:#c8005a;display:flex;align-items:center;gap:4px}
+.timerRow{display:flex;justify-content:space-between;align-items:center;margin:12px 0 2px;background:linear-gradient(180deg,#fff0f7,#ffe0ee);border:1px solid #ffd6e8;border-radius:99px;padding:9px 14px}
+.timerLeft{font-size:16px;font-weight:900;color:#c8005a;display:flex;align-items:center;gap:4px}
 .timerLeft.low{color:#ff0000;animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
-.targetRight{font-size:15px;font-weight:900;color:#1e0a3a;display:flex;align-items:center;gap:4px}
-.targetRight .tc{font-size:20px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+.targetRight{font-size:16px;font-weight:900;color:#1e0a3a;display:flex;align-items:center;gap:4px}
+.targetRight .tc{font-size:22px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
 .targetRight.done{color:#168f00}
 .boardCard{background:linear-gradient(180deg,#ffffff,#fff8fb);border-radius:24px;padding:16px 10px 12px;max-width:400px;margin:0 auto;box-shadow:0 14px 35px rgba(0,0,0,.38), inset 0 1px 0 #fff;position:relative;overflow:hidden}
 .boardCard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ff006e,#ffb300,#a100ff)}
@@ -74,12 +70,9 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 
 <div class="topCard">
 <div class="topRow"><div class="coins"><span>🪙</span> <span id="coins">660</span> Coins</div><div class="lvl">Level <span id="level">17</span></div></div>
-<div class="progress"><div id="bar"></div></div>
-<div class="progRow"><span>Level Progress</span><span><span id="score">0</span> / 300 &nbsp;•&nbsp; Moves: <span id="moves">18</span></span></div>
-<!-- NEW: CLOCK LEFT + TARGET CANDY RIGHT -->
 <div class="timerRow">
 <div class="timerLeft" id="timerLeft">⏰ <span id="timeText">01:30</span></div>
-<div class="targetRight" id="targetRight">🎯 Clear <span class="tc" id="targetCandy">🍭</span> <span id="targetText">0 / 12</span></div>
+<div class="targetRight" id="targetRight">🎯 Clear <span class="tc" id="targetCandy">🍭</span> <span id="targetText">0 / 20</span></div>
 </div>
 </div>
 
@@ -126,9 +119,8 @@ let refEarn=parseInt(localStorage.getItem('cm_refEarn')||'0');
 let score=0,moves=18,board=[],sel=null,busy=false,pendingCoins=0,combo=0,lastMatchTime=0,playerBlastUsed=false;
 let hammer=parseInt(localStorage.getItem('cm_hammer')||'3');
 let bomb=parseInt(localStorage.getItem('cm_bomb')||'1');
-// NEW: TIMER + TARGET - ONLY ADDITION
-let timeLeft=90, timerInterval=null, targetCandy=candies[level%5], targetNeeded=12, targetCleared=0;
-function setNewTarget(){ targetCandy=candies[level%5]; targetNeeded=12; targetCleared=0; }
+let timeLeft=90, timerInterval=null, targetCandy=candies[level%5], targetNeeded=20, targetCleared=0;
+function setNewTarget(){ targetCandy=candies[level%5]; targetNeeded=20; targetCleared=0; }
 function formatTime(s){ let m=Math.floor(s/60), sec=s%60; return (m<10?'0'+m:m)+':'+(sec<10?'0'+sec:sec); }
 function startTimer(){ if(timerInterval) clearInterval(timerInterval); timeLeft=90; timerInterval=setInterval(()=>{ timeLeft--; if(timeLeft<=0){ clearInterval(timerInterval); timeLeft=0; showPopup('⏰ Time Up! Try again!'); score=0; moves=18; setNewTarget(); make(); startTimer(); } update(); },1000); }
 let myCode=localStorage.getItem('cm_code')||('CANDY'+Math.floor(Math.random()*9000+1000));
@@ -146,12 +138,11 @@ function startMusic(){ if(musicTimer) clearInterval(musicTimer); musicTimer=setI
 function toggleMusic(){ musicOn=!musicOn; document.getElementById('musicBtn').textContent=musicOn?'🎵':'🔇'; if(musicOn){ startMusic(); } else if(musicTimer) clearInterval(musicTimer); }
 document.addEventListener('click',()=>{ if(musicOn && !musicTimer) startMusic(); },{once:true});
 function save(){localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);localStorage.setItem('cm_hammer',hammer);localStorage.setItem('cm_bomb',bomb);update();}
-function update(){document.getElementById('coins').textContent=coins;document.getElementById('coins2').textContent=coins;document.getElementById('usd').textContent=(coins/100000).toFixed(4);document.getElementById('level').textContent=level;document.getElementById('score').textContent=score;document.getElementById('moves').textContent=moves;document.getElementById('moves2').textContent=moves;document.getElementById('refs').textContent=refs;document.getElementById('refEarn').textContent=refEarn;document.getElementById('hammerCount').textContent=hammer;document.getElementById('bombCount').textContent=bomb;document.getElementById('bar').style.width=Math.min(100,score/TARGET*100)+'%';
+function update(){document.getElementById('coins').textContent=coins;document.getElementById('coins2').textContent=coins;document.getElementById('usd').textContent=(coins/100000).toFixed(4);document.getElementById('level').textContent=level;document.getElementById('score').textContent=score;document.getElementById('moves').textContent=moves;document.getElementById('moves2').textContent=moves;document.getElementById('refs').textContent=refs;document.getElementById('refEarn').textContent=refEarn;document.getElementById('hammerCount').textContent=hammer;document.getElementById('bombCount').textContent=bomb;
 let realLink=location.href.split('?')[0]+'?ref='+myCode;
 let prettyLink='https://candy-match.app/?ref='+myCode;
 document.getElementById('refLink').value=prettyLink;
 document.getElementById('realRefLink').value=realLink;
-// UPDATE TIMER + TARGET DISPLAY ONLY
 document.getElementById('timeText').textContent=formatTime(timeLeft);
 document.getElementById('timerLeft').className='timerLeft'+(timeLeft<=15?' low':'');
 document.getElementById('targetCandy').textContent=targetCandy;
@@ -173,7 +164,6 @@ function resolve(isPlayer){
  if(isBig){showCombo('💥 Divine!');playSound('blast');} else if(isMed){showCombo('😋 Tasty!');playSound('blast');} else {showCombo(combo>1?'🔥 Combo x'+combo+' Sweet!':'Sweet!');playSound('pop');}
  if(useBlast){ let extra=new Set(m); m.forEach(i=>{let r=Math.floor(i/W),c=i%W; [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([rr,cc])=>{if(rr>=0&&rr<H&&cc>=0&&cc<W) extra.add(idx(rr,cc));});}); if(extra.size>10) m=new Set(Array.from(extra).slice(0,10)); else m=extra; }
  let fe=document.querySelectorAll('.cell')[Array.from(m)[0]]; if(fe){let rc=fe.getBoundingClientRect(); blastEffect(rc.left+rc.width/2, rc.top+rc.height/2);}
- // COUNT TARGET CANDY ONLY
  m.forEach(i=>{ if(board[i]===targetCandy) targetCleared++; });
  if(targetCleared>=targetNeeded){ showCombo('🎯 Target Cleared!'); }
  score+=m.size*10; if(combo>1) score+=5;
