@@ -2,6 +2,7 @@
 <html>
 <head>
  <script src='//libtl.com/sdk.js' data-zone='12265436' data-sdk='show_12265436'></script>
+ <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Candy Match</title>
 <style>
@@ -113,21 +114,24 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 let candies=['🍭','🧸','🍬','🍩','🧁'];
 let W=5,H=6;
 let TARGET=300;
-let coins=parseInt(localStorage.getItem('cm_coins'));
-if(isNaN(coins)) coins=0;
-let level=parseInt(localStorage.getItem('cm_level'));
-if(isNaN(level)) level=1;
-let refs=parseInt(localStorage.getItem('cm_refs')||'0');
-let refEarn=parseInt(localStorage.getItem('cm_refEarn')||'0');
+// --- FIXED SAVE SYSTEM: localStorage + Telegram CloudStorage ---
+let coins=0, level=1, refs=0, refEarn=0, hammer=3, bomb=1;
+try{
+  coins=parseInt(localStorage.getItem('cm_coins'))||0;
+  level=parseInt(localStorage.getItem('cm_level'))||1;
+  if(level<1) level=1;
+  refs=parseInt(localStorage.getItem('cm_refs'))||0;
+  refEarn=parseInt(localStorage.getItem('cm_refEarn'))||0;
+  hammer=parseInt(localStorage.getItem('cm_hammer'))||3;
+  bomb=parseInt(localStorage.getItem('cm_bomb'))||1;
+}catch(e){}
 let score=0,moves=18,board=[],sel=null,busy=false,pendingCoins=0,combo=0,lastMatchTime=0,playerBlastUsed=false;
-let hammer=parseInt(localStorage.getItem('cm_hammer')||'3');
-let bomb=parseInt(localStorage.getItem('cm_bomb')||'1');
 let timeLeft=90, timerInterval=null, targetCandy=candies[level%5], targetNeeded=20, targetCleared=0;
 function setNewTarget(){ targetCandy=candies[level%5]; targetNeeded=20; targetCleared=0; }
 function formatTime(s){ let m=Math.floor(s/60), sec=s%60; return (m<10?'0'+m:m)+':'+(sec<10?'0'+sec:sec); }
 function startTimer(){ if(timerInterval) clearInterval(timerInterval); timeLeft=90; timerInterval=setInterval(()=>{ timeLeft--; if(timeLeft<=0){ clearInterval(timerInterval); timeLeft=0; showPopup('⏰ Time Up! Try again!'); score=0; moves=18; setNewTarget(); make(); startTimer(); } update(); },1000); }
-let myCode=localStorage.getItem('cm_code')||('CANDY'+Math.floor(Math.random()*9000+1000));
-localStorage.setItem('cm_code',myCode);
+let myCode='CANDY0000';
+try{ myCode=localStorage.getItem('cm_code')||('CANDY'+Math.floor(Math.random()*9000+1000)); localStorage.setItem('cm_code',myCode); }catch(e){ myCode='CANDY'+Math.floor(Math.random()*9000+1000); }
 let audioCtx=null, musicOn=true, musicTimer=null, musicNote=0;
 function getCtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
 function showPopup(msg){ document.getElementById('popupText').textContent=msg; document.getElementById('myPopup').classList.add('show'); }
@@ -140,7 +144,46 @@ function playMusicNote(){ if(!musicOn) return; try{ let ctx=getCtx(); let f=melo
 function startMusic(){ if(musicTimer) clearInterval(musicTimer); musicTimer=setInterval(playMusicNote,380); }
 function toggleMusic(){ musicOn=!musicOn; document.getElementById('musicBtn').textContent=musicOn?'🎵':'🔇'; if(musicOn){ startMusic(); } else if(musicTimer) clearInterval(musicTimer); }
 document.addEventListener('click',()=>{ if(musicOn && !musicTimer) startMusic(); },{once:true});
-function save(){localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);localStorage.setItem('cm_hammer',hammer);localStorage.setItem('cm_bomb',bomb);update();}
+function save(){
+  if(level<1) level=1;
+  try{
+    localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);localStorage.setItem('cm_hammer',hammer);localStorage.setItem('cm_bomb',bomb);localStorage.setItem('cm_code',myCode);
+  }catch(e){}
+  try{
+    if(window.Telegram && Telegram.WebApp && Telegram.WebApp.CloudStorage){
+      Telegram.WebApp.CloudStorage.setItem('cm_coins', String(coins));
+      Telegram.WebApp.CloudStorage.setItem('cm_level', String(level));
+      Telegram.WebApp.CloudStorage.setItem('cm_refs', String(refs));
+      Telegram.WebApp.CloudStorage.setItem('cm_refEarn', String(refEarn));
+      Telegram.WebApp.CloudStorage.setItem('cm_hammer', String(hammer));
+      Telegram.WebApp.CloudStorage.setItem('cm_bomb', String(bomb));
+      Telegram.WebApp.CloudStorage.setItem('cm_code', String(myCode));
+    }
+  }catch(e){}
+  update();
+}
+function loadFromCloud(){
+  try{
+    if(window.Telegram && Telegram.WebApp && Telegram.WebApp.CloudStorage){
+      Telegram.WebApp.ready();
+      Telegram.WebApp.CloudStorage.getItems(['cm_coins','cm_level','cm_refs','cm_refEarn','cm_hammer','cm_bomb','cm_code'], function(err, res){
+        if(!err && res){
+          let changed=false;
+          if(res.cm_coins!==undefined && res.cm_coins!==''){ let v=parseInt(res.cm_coins); if(!isNaN(v) && v>coins){ coins=v; changed=true; } }
+          if(res.cm_level!==undefined && res.cm_level!==''){ let v=parseInt(res.cm_level); if(!isNaN(v) && v>level){ level=v; changed=true; } }
+          if(res.cm_refs!==undefined && res.cm_refs!==''){ refs=parseInt(res.cm_refs)||refs; }
+          if(res.cm_refEarn!==undefined && res.cm_refEarn!==''){ refEarn=parseInt(res.cm_refEarn)||refEarn; }
+          if(res.cm_hammer!==undefined && res.cm_hammer!==''){ hammer=parseInt(res.cm_hammer)||hammer; }
+          if(res.cm_bomb!==undefined && res.cm_bomb!==''){ bomb=parseInt(res.cm_bomb)||bomb; }
+          if(res.cm_code){ myCode=res.cm_code; }
+          if(level<1) level=1;
+          if(changed){ setNewTarget(); }
+          update();
+        }
+      });
+    }
+  }catch(e){}
+}
 function setText(id,val){ let el=document.getElementById(id); if(el) el.textContent=val; }
 function update(){
 setText('coins',coins); setText('coins2',coins); setText('usd',(coins/100000).toFixed(4)); setText('level',level);
@@ -179,7 +222,6 @@ function resolve(isPlayer){
 }
 function fall(){ for(let c=0;c<W;c++){ let col=[]; for(let r=H-1;r>=0;r--){let v=board[idx(r,c)]; if(v)col.push(v);} for(let r=H-1,k=0;r>=0;r--,k++){ board[idx(r,c)]=k<col.length?col[k]:rand(); } } }
 function checkWin(){if(score>=TARGET){pendingCoins=50;playSound('win');setTimeout(()=>showCompulsoryAd(),400);}}
-// 1. IN-APP INTERSTITIAL - AFTER WIN
 function showCompulsoryAd(){
   show_12265436().then(() => {
     claimReward();
@@ -187,11 +229,10 @@ function showCompulsoryAd(){
     claimReward();
   });
 }
-function claimReward(){coins+=pendingCoins;level++;score=0;moves=18;combo=0;hammer=3; bomb=1;setNewTarget();save();playSound('coin');document.getElementById('adModal').classList.remove('show');showPopup('🎉 +50 Coins! Total: '+coins+' - Level '+level+' - Hammer x3 + Bomb x1 Refilled!');make();startTimer();}
+function claimReward(){coins+=pendingCoins;level++;if(level<1) level=1;score=0;moves=18;combo=0;hammer=3; bomb=1;setNewTarget();save();playSound('coin');document.getElementById('adModal').classList.remove('show');showPopup('🎉 +50 Coins! Total: '+coins+' - Level '+level+' - Hammer x3 + Bomb x1 Refilled!');make();startTimer();}
 function shuffleBoard(){playSound('swap');for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;}draw();}
 function useHammer(){ if(hammer<=0){showPopup('No Hammer left! Buy one in Shop or win a level to refill.');return;} hammer--; save(); showPopup('Tap a candy to smash it with Hammer!'); let cells=document.querySelectorAll('.cell'); cells.forEach((el,i)=>{ el.onclick=()=>{ if(board[i]===targetCandy) targetCleared++; board[i]=rand(); playSound('blast'); draw(); document.querySelectorAll('.cell').forEach((e2,j)=>e2.onclick=()=>tap(j)); }; }); update(); }
 function useBomb(){ if(bomb<=0){showPopup('No Color Bomb left! Buy one in Shop or win a level to refill.');return;} bomb--; let c=candies[Math.floor(Math.random()*candies.length)]; let cleared=0; board.forEach((v,i)=>{ if(v===c){ if(v===targetCandy) targetCleared++; board[i]=rand(); cleared++; } }); score+=cleared*10; playSound('blast'); draw(); showPopup('💥 Color Bomb cleared '+cleared+' candies!'); update(); save(); }
-// 2. REWARDED POPUP - BONUS BUTTON +10 MOVES
 function watchAd(){
   let btn=event.target; let old=btn.textContent; btn.disabled=true; btn.textContent='⏳ Ad Playing...';
   show_12265436('pop').then(() => {
@@ -200,7 +241,7 @@ function watchAd(){
     btn.disabled=false; btn.textContent=old; showPopup('Ad not ready, try again');
   });
 }
-function daily(){let last=localStorage.getItem('cm_daily');let today=new Date().toDateString();if(last===today){showPopup('Already claimed today!');return;}localStorage.setItem('cm_daily',today);coins+=30;hammer=3; bomb=1;save();playSound('coin');showPopup('+30 Daily Bonus! Hammer x3 + Bomb x1 Refilled! Total: '+coins);}
+function daily(){let last=null; try{ last=localStorage.getItem('cm_daily'); }catch(e){} let today=new Date().toDateString();if(last===today){showPopup('Already claimed today!');return;}try{localStorage.setItem('cm_daily',today);}catch(e){}coins+=30;hammer=3; bomb=1;save();playSound('coin');showPopup('+30 Daily Bonus! Hammer x3 + Bomb x1 Refilled! Total: '+coins);}
 function copyRef(){let real=document.getElementById('realRefLink').value;try{navigator.clipboard.writeText(real);}catch(e){let e2=document.getElementById('realRefLink');e2.style.display='block';e2.select();document.execCommand('copy');e2.style.display='none';}showPopup('Link Copied!');}
 function withdraw(){
   if(!document.getElementById('feeCheck').checked){ showPopup('⚠️ Please tick the box first: You have checked your wallet minimum receiving fee. We are not responsible for receiver fees.'); return; }
@@ -211,18 +252,18 @@ function buyBombRow(){if(coins<100){document.getElementById('shopMsg').textConte
 function buyHammer(){if(coins<50){document.getElementById('shopMsg').textContent='Need 50 Coins!';return;}coins-=50;hammer++;save();playSound('coin');showPopup('⭐ Hammer bought! Now Hammer x'+hammer);}
 function buyColorBomb(){if(coins<100){document.getElementById('shopMsg').textContent='Need 100 Coins!';return;}coins-=100;bomb++;save();playSound('coin');showPopup('⚡ Color Bomb bought! Now Bomb x'+bomb);}
 function buyBomb(){ buyBombRow(); }
-let p=new URLSearchParams(location.search);if(p.get('ref')&&!localStorage.getItem('cm_got_ref')){localStorage.setItem('cm_got_ref','1');coins+=20;save();showPopup('Welcome! +20 Coins!');}
+let p=new URLSearchParams(location.search);if(p.get('ref')){ let got=false; try{ got=localStorage.getItem('cm_got_ref'); }catch(e){} if(!got){ try{localStorage.setItem('cm_got_ref','1');}catch(e){} coins+=20;save();showPopup('Welcome! +20 Coins!');} }
 setNewTarget();
 make();
 startTimer();
-// 3. IN-APP INTERSTITIAL - AUTO ADS
+loadFromCloud();
 show_12265436({
   type: 'inApp',
   inAppSettings: {
     frequency: 2,
-    capping: 1,
+    capping: 0.1,
     interval: 30,
-    timeout: 60,
+    timeout: 5,
     everyPage: false
   }
 })
