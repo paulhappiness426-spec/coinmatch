@@ -28,10 +28,11 @@ background-attachment:fixed}
 .boardCard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ff006e,#ffb300,#a100ff)}
 .boardCard h3{margin:2px 0 14px;font-size:14px;letter-spacing:.8px;line-height:1.4;color:#1e0a3a;text-transform:uppercase}
 .boardCard h3 span{color:#ff006e}
-#board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;min-height:340px}
-.cell{height:56px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fdf7fb,#f2e9f1);border:1px solid #f0d9e8;border-radius:16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 2px 3px rgba(255,255,255,.9), 0 2px 5px rgba(0,0,0,.06)}
+#board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;min-height:340px;touch-action:none}
+.cell{height:56px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fdf7fb,#f2e9f1);border:1px solid #f0d9e8;border-radius:16px;cursor:grab;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 2px 3px rgba(255,255,255,.9), 0 2px 5px rgba(0,0,0,.06);touch-action:none}
 .cell.sel{outline:3px solid #ff006e;background:#ffe0ee;box-shadow:0 0 0 3px rgba(255,0,110,.25), 0 0 14px rgba(255,0,110,.4)}
-.candy{font-size:34px;line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,.25)) drop-shadow(0 0 1px rgba(255,255,255,.8));}
+.cell.swipe-from{outline:3px solid #00b0ff;background:#e0f7ff;transform:scale(1.08);z-index:2}
+.candy{font-size:34px;line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,.25)) drop-shadow(0 0 1px rgba(255,255,255,.8));pointer-events:none}
 .cell.pop .candy{animation:pop .28s ease}
 .cell.blast .candy{animation:blastPop .4s ease}
 @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
@@ -86,7 +87,7 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 
 <div id="game" class="tab active">
 <div class="boardCard">
-<h3>Candy Match — <span>Premium</span><br>Collect Targets</h3>
+<h3>Candy Match — <span>Premium</span><br>👉 SWIPE ONLY!</h3>
 <div id="board"></div>
 </div>
 <div class="tools">
@@ -95,7 +96,7 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <button onclick="useBomb()">⚡ Color Bomb x<span id="bombCount">1</span></button>
 </div>
 <div><span class="movesPill">Moves Left: <span id="moves2">18</span></span></div>
-<div class="box"><p><b>How to play:</b> Tap 2 sweets to swap. Match 3+ = BLAST! Match 4 = Tasty! Match 5 = Divine!</p>
+<div class="box"><p><b>How to play:</b> <b>SWIPE ONLY!</b> Drag a sweet left / right / up / down to swap. Match 3+ = BLAST! Match 4 = Tasty! Match 5 = Divine!</p>
 <button class="big" onclick="watchAd(false)">📺 Watch Ad +10 Moves</button>
 <button class="big gold" onclick="daily()">🎁 Daily Bonus +30 Coins</button>
 <button class="big" onclick="buyMoves()">➕ +10 Moves - Only 5 Coins</button>
@@ -116,6 +117,26 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 
 <script>
 let candies=['🍭','🧸','🍬','🍩','🧁'];
+const SUPABASE_URL = "https://pvwqacmxcknhjtsandag.supabase.co";
+const SUPABASE_KEY = "sb_publishable_LpQpS6t_LyNPq8W7nuVlLA_Qf-totbu";
+async function supabaseRequest(path, method, body){
+  try{
+    let res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+      method: method,
+      headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=representation" },
+      body: body ? JSON.stringify(body) : null
+    });
+    return await res.json();
+  }catch(e){ return null; }
+}
+async function saveReferralToSupabase(referrerCode){
+  let r = await supabaseRequest("referrals", "POST", { referrer_code: referrerCode, new_user_code: myCode });
+  console.log("Referral saved:", r);
+}
+async function loadReferralCount(){
+  let data = await supabaseRequest("referrals?referrer_code=eq." + myCode + "&select=id", "GET");
+  if(data && Array.isArray(data)){ refs = data.length; refEarn = refs * 20; save(); }
+}
 let W=5,H=6;
 let TARGET=300;
 let coins=0, level=1, refs=0, refEarn=0, hammer=3, bomb=1;
@@ -130,6 +151,7 @@ try{
 }catch(e){}
 let score=0,moves=18,board=[],sel=null,busy=false,pendingCoins=0,combo=0,lastMatchTime=0,playerBlastUsed=false;
 let timeLeft=90, timerInterval=null, targetCandy=candies[level%5], targetNeeded=20, targetCleared=0;
+let swipeStartIndex=null, swipeStartX=0, swipeStartY=0, swipeMoved=false, hammerMode=false;
 function setNewTarget(){ targetCandy=candies[level%5]; targetNeeded=20; targetCleared=0; }
 function formatTime(s){ let m=Math.floor(s/60), sec=s%60; return (m<10?'0'+m:m)+':'+(sec<10?'0'+sec:sec); }
 function startTimer(){ if(timerInterval) clearInterval(timerInterval); timeLeft=90; timerInterval=setInterval(()=>{ timeLeft--; if(timeLeft<=0){ clearInterval(timerInterval); timeLeft=0; showPopup('⏰ Time Up! Try again!'); score=0; moves=18; setNewTarget(); make(); startTimer(); } update(); },1000); }
@@ -161,7 +183,6 @@ function update(){
 setText('coins',coins); setText('coins2',coins); setText('usd',(coins/100000).toFixed(4)); setText('level',level);
 setText('score',score); setText('moves',moves); setText('moves2',moves); setText('refs',refs); setText('refEarn',refEarn);
 setText('hammerCount',hammer); setText('bombCount',bomb);
-// FIXED: Never use location.href - it contains Telegram tgWebAppData
 let cleanBase='https://coinmatch-kc17.vercel.app';
 let realLink=cleanBase+'/?ref='+myCode;
 let prettyLink='https://t.me/candymatchs_bot/CandyMatch?startapp='+myCode;
@@ -176,10 +197,85 @@ let tr=document.getElementById('targetRight'); if(tr) tr.className='targetRight'
 function show(t){playSound('click');document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('on'));document.getElementById('b-'+t).classList.add('on');}
 function rand(){return candies[Math.floor(Math.random()*candies.length)];}
 function make(){board=[];for(let i=0;i<W*H;i++)board.push(rand());let g=0;while(findMatches().size>0 && g<20){findMatches().forEach(i=>board[i]=rand());g++;}draw();}
-function draw(){let b=document.getElementById('board');b.innerHTML='';board.forEach((c,i)=>{let d=document.createElement('div');d.className='cell'+(sel===i?' sel':'');let s=document.createElement('span');s.className='candy';s.textContent=c;d.appendChild(s);d.onclick=()=>tap(i);b.appendChild(d);});update();}
+function draw(){let b=document.getElementById('board');b.innerHTML='';board.forEach((c,i)=>{let d=document.createElement('div');d.className='cell';d.dataset.index=i;let s=document.createElement('span');s.className='candy';s.textContent=c;d.appendChild(s);d.onclick=()=>tap(i);b.appendChild(d);});update();}
 function idx(r,c){return r*W+c;}
 function findMatches(){let s=new Set();for(let r=0;r<H;r++)for(let c=0;c<W-2;c++){let i=idx(r,c);if(board[i]&&board[i]===board[i+1]&&board[i]===board[i+2]){s.add(i);s.add(i+1);s.add(i+2);}}for(let c=0;c<W;c++)for(let r=0;r<H-2;r++){let i=idx(r,c);if(board[i]&&board[i]===board[idx(r+1,c)]&&board[i]===board[idx(r+2,c)]){s.add(i);s.add(idx(r+1,c));s.add(idx(r+2,c));}}return s;}
-function tap(i){if(busy)return;if(sel===null){sel=i;playSound('click');draw();return;}let a=sel;sel=null;let ra=Math.floor(a/W),ca=a%W,rb=Math.floor(i/W),cb=i%W;if(Math.abs(ra-rb)+Math.abs(ca-cb)!==1){draw();return;}playSound('swap');let t=board[a];board[a]=board[i];board[i]=t;moves--;draw();let m=findMatches();if(m.size===0){setTimeout(()=>{let t2=board[a];board[a]=board[i];board[i]=t2;draw();},220);}else{busy=true;playerBlastUsed=false;setTimeout(()=>resolve(true),280);}if(moves<=0&&m.size===0){setTimeout(()=>{showPopup('Out of Moves! Score: '+score);score=0;moves=18;setNewTarget();make();startTimer();},500);}checkWin();}
+function trySwap(a,b){
+  if(busy) return;
+  if(b<0||b>=W*H) return;
+  let ra=Math.floor(a/W),ca=a%W,rb=Math.floor(b/W),cb=b%W;
+  if(Math.abs(ra-rb)+Math.abs(ca-cb)!==1) return;
+  sel=null;
+  playSound('swap');
+  let t=board[a];board[a]=board[b];board[b]=t;moves--;draw();
+  let m=findMatches();
+  if(m.size===0){setTimeout(()=>{let t2=board[a];board[a]=board[b];board[b]=t2;draw();},220);}
+  else{busy=true;playerBlastUsed=false;setTimeout(()=>resolve(true),280);}
+  if(moves<=0&&m.size===0){setTimeout(()=>{showPopup('Out of Moves! Score: '+score);score=0;moves=18;setNewTarget();make();startTimer();},500);}
+  checkWin();
+}
+function setupSwipe(){
+  let b=document.getElementById('board');
+  b.addEventListener('touchstart', e=>{
+    if(busy) return;
+    let cell=e.target.closest('.cell'); if(!cell) return;
+    swipeStartIndex=parseInt(cell.dataset.index);
+    let touch=e.touches[0];
+    swipeStartX=touch.clientX; swipeStartY=touch.clientY; swipeMoved=false;
+    cell.classList.add('swipe-from');
+  }, {passive:true});
+  b.addEventListener('touchmove', e=>{
+    if(swipeStartIndex===null) return;
+    e.preventDefault();
+    let touch=e.touches[0];
+    let dx=touch.clientX-swipeStartX, dy=touch.clientY-swipeStartY;
+    if(Math.abs(dx)<15 && Math.abs(dy)<15) return;
+    swipeMoved=true;
+    let target=null;
+    if(Math.abs(dx)>Math.abs(dy)){ target = dx>0 ? swipeStartIndex+1 : swipeStartIndex-1; }
+    else{ target = dy>0 ? swipeStartIndex+W : swipeStartIndex-W; }
+    if(Math.abs(dx)>Math.abs(dy)){
+      let c=swipeStartIndex%W;
+      if(dx>0 && c===W-1) target=null;
+      if(dx<0 && c===0) target=null;
+    }
+    if(target!==null){
+      let s=swipeStartIndex; swipeStartIndex=null; swipeMoved=false;
+      document.querySelectorAll('.cell').forEach(el=>el.classList.remove('swipe-from'));
+      trySwap(s,target);
+    }
+  }, {passive:false});
+  b.addEventListener('touchend', e=>{
+    document.querySelectorAll('.cell').forEach(el=>el.classList.remove('swipe-from'));
+    swipeStartIndex=null; swipeMoved=false;
+  });
+  let mouseDown=false, mouseStartIndex=null, mouseX=0, mouseY=0;
+  b.addEventListener('mousedown', e=>{
+    let cell=e.target.closest('.cell'); if(!cell) return;
+    mouseDown=true; mouseStartIndex=parseInt(cell.dataset.index); mouseX=e.clientX; mouseY=e.clientY;
+  });
+  b.addEventListener('mousemove', e=>{
+    if(!mouseDown||mouseStartIndex===null) return;
+    let dx=e.clientX-mouseX, dy=e.clientY-mouseY;
+    if(Math.abs(dx)<18 && Math.abs(dy)<18) return;
+    let target=null;
+    if(Math.abs(dx)>Math.abs(dy)){ target = dx>0 ? mouseStartIndex+1 : mouseStartIndex-1; let c=mouseStartIndex%W; if(dx>0 && c===W-1) target=null; if(dx<0 && c===0) target=null; }
+    else{ target = dy>0 ? mouseStartIndex+W : mouseStartIndex-W; }
+    if(target!==null){ let s=mouseStartIndex; mouseDown=false; mouseStartIndex=null; trySwap(s,target); }
+  });
+  b.addEventListener('mouseup', ()=>{ mouseDown=false; mouseStartIndex=null; });
+}
+// ONLY SWIPE - TAP DOES NOTHING (except Hammer)
+function tap(i){
+  if(busy) return;
+  if(hammerMode){
+    hammerMode=false;
+    if(board[i]===targetCandy) targetCleared++;
+    board[i]=rand(); playSound('blast'); draw(); return;
+  }
+  // Tap alone does nothing - you must swipe!
+  return;
+}
 function resolve(isPlayer){
  let m=findMatches(); if(m.size===0){busy=false;draw();checkWin();return;}
  let now=Date.now(); if(now-lastMatchTime<2500) combo++; else combo=1; lastMatchTime=now;
@@ -199,7 +295,7 @@ function checkWin(){if(score>=TARGET){pendingCoins=50;playSound('win');setTimeou
 function showCompulsoryAd(){ show_12265436().then(() => { claimReward(); }).catch(e => { claimReward(); }); }
 function claimReward(){coins+=pendingCoins;level++;if(level<1) level=1;score=0;moves=18;combo=0;hammer=3; bomb=1;setNewTarget();save();playSound('coin');document.getElementById('adModal').classList.remove('show');showPopup('🎉 +50 Coins! Total: '+coins+' - Level '+level+' - Hammer x3 + Bomb x1 Refilled!');make();startTimer();}
 function shuffleBoard(){playSound('swap');for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;}draw();}
-function useHammer(){ if(hammer<=0){showPopup('No Hammer left! Buy one in Shop or win a level to refill.');return;} hammer--; save(); showPopup('Tap a candy to smash it with Hammer!'); let cells=document.querySelectorAll('.cell'); cells.forEach((el,i)=>{ el.onclick=()=>{ if(board[i]===targetCandy) targetCleared++; board[i]=rand(); playSound('blast'); draw(); document.querySelectorAll('.cell').forEach((e2,j)=>e2.onclick=()=>tap(j)); }; }); update(); }
+function useHammer(){ if(hammer<=0){showPopup('No Hammer left! Buy one in Shop or win a level to refill.');return;} hammer--; save(); hammerMode=true; showPopup('Tap a candy to smash it with Hammer!'); update(); }
 function useBomb(){ if(bomb<=0){showPopup('No Color Bomb left! Buy one in Shop or win a level to refill.');return;} bomb--; let c=candies[Math.floor(Math.random()*candies.length)]; let cleared=0; board.forEach((v,i)=>{ if(v===c){ if(v===targetCandy) targetCleared++; board[i]=rand(); cleared++; } }); score+=cleared*10; playSound('blast'); draw(); showPopup('💥 Color Bomb cleared '+cleared+' candies!'); update(); save(); }
 function watchAd(){
   let btn=event.target; let old=btn.textContent; btn.disabled=true; btn.textContent='⏳ Ad Playing...';
@@ -220,8 +316,7 @@ function buyBombRow(){if(coins<100){document.getElementById('shopMsg').textConte
 function buyHammer(){if(coins<50){document.getElementById('shopMsg').textContent='Need 50 Coins!';return;}coins-=50;hammer++;save();playSound('coin');showPopup('⭐ Hammer bought! Now Hammer x'+hammer);}
 function buyColorBomb(){if(coins<100){document.getElementById('shopMsg').textContent='Need 100 Coins!';return;}coins-=100;bomb++;save();playSound('coin');showPopup('⚡ Color Bomb bought! Now Bomb x'+bomb);}
 function buyBomb(){ buyBombRow(); }
-// FIXED REFERRAL: Check both ?ref= and Telegram startapp
-function handleReferral(){
+async function handleReferral(){
   let refCode=null;
   try{
     let p=new URLSearchParams(location.search);
@@ -231,14 +326,16 @@ function handleReferral(){
       refCode=Telegram.WebApp.initDataUnsafe.start_param;
     }
   }catch(e){}
+  loadReferralCount();
   if(refCode && refCode!==myCode){
     let got=false; try{ got=localStorage.getItem('cm_got_ref'); }catch(e){}
-    if(!got){ try{localStorage.setItem('cm_got_ref','1');}catch(e){} coins+=20; save(); showPopup('Welcome! +20 Coins from your friend!'); }
+    if(!got){ try{localStorage.setItem('cm_got_ref','1');}catch(e){} coins+=20; save(); showPopup('Welcome! +20 Coins from your friend!'); saveReferralToSupabase(refCode); }
   }
 }
 handleReferral();
 setNewTarget();
 make();
+setupSwipe();
 startTimer();
 loadFromCloud();
 show_12265436({ type: 'inApp', inAppSettings: { frequency: 2, capping: 0.1, interval: 30, timeout: 5, everyPage: false } })
