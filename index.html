@@ -53,10 +53,6 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 .nav button.on{background:linear-gradient(180deg,#ff2d95,#ff006e);color:#fff}
 .box{background:#fff;color:#4a0033;border-radius:20px;padding:14px;margin:10px auto;max-width:400px;box-shadow:0 10px 22px rgba(0,0,0,.25)}
 .small{font-size:12px;color:#888}
-#adModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99;align-items:center;justify-content:center}
-#adModal.show{display:flex}
-.adBox{background:#fff;color:#4a0033;border-radius:20px;padding:20px;width:90%;max-width:340px;text-align:center}
-.adScreen{background:linear-gradient(135deg,#ff006e,#ffb300);color:#fff;border-radius:15px;padding:25px 10px;margin:10px 0;font-size:18px}
 .usdt{background:#fff8e1;border:2px dashed #ffb300;border-radius:15px;padding:10px;margin:8px 0;font-size:13px}
 .musicBtn{position:fixed;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:none;background:#fff;font-size:20px;z-index:50;box-shadow:0 4px 10px rgba(0,0,0,.3);cursor:pointer}
 .particle{position:fixed;width:12px;height:12px;border-radius:50%;pointer-events:none;z-index:99;animation:fly .65s ease forwards}
@@ -78,7 +74,6 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <div id="refer" class="tab"><div class="box"><h3 style="color:#ff006e">👥 Refer & Earn</h3><p>Share link. Friend joins = <b>You get +20 Coins</b></p><input id="refLink" readonly><input id="realRefLink" readonly style="display:none"><br><button class="big" onclick="copyRef()">📋 Copy My Link</button><p>Friends: <b><span id="refs">0</span></b> • Earned: <b><span id="refEarn">0</span> Coins</b></p></div></div>
 <div id="cash" class="tab"><div class="box"><h3 style="color:#ff006e">💰 Cashout - USDT BEP20 Only</h3><p>Balance: <b><span id="coins2">0</span> Coins</b> = $<span id="usd">0.0000</span> USDT</p><p class="small">Rate: 100,000 Coins = $1.00 • Min: 5000 Coins = $0.05</p><div class="usdt">🪙 <b>USDT - BEP20 ONLY</b></div><div style="background:#fff3cd;border:2px solid #ffb300;border-radius:14px;padding:12px;margin:10px 0;text-align:left;font-size:13px;line-height:1.5"><b>⚠️ IMPORTANT:</b> App is NOT responsible for wallet receiving fees. Check your wallet minimum BEFORE withdrawal.</div><input id="acct" placeholder="Your USDT BEP20 Wallet Address (0x...)"><br><input id="name" placeholder="Your Username / Full Name"><br><label style="display:block;text-align:left;font-size:13px;margin:8px 0"><input type="checkbox" id="feeCheck" style="width:auto;margin-right:6px">I have checked my wallet's minimum receiving fee.</label><button class="big" onclick="withdraw()">Request USDT BEP20 Withdrawal</button><p id="wmsg"></p></div></div>
 <div id="shop" class="tab"><div class="box"><h3 style="color:#ff006e">🛒 Candy Shop</h3><button class="big" onclick="buyMoves()">➕ +10 Moves - 5 Coins</button><button class="big" onclick="buyShuffle()">🔀 Extra Shuffle - 30 Coins</button><button class="big" onclick="buyBombRow()">💣 Bomb - Clear 1 Row - 100 Coins</button><button class="big" onclick="buyHammer()">⭐ Buy Hammer x1 - 50 Coins</button><button class="big" onclick="buyColorBomb()">⚡ Buy Color Bomb x1 - 100 Coins</button><p id="shopMsg"></p></div></div>
-<div id="adModal"><div class="adBox"><h3 style="color:#ff006e">🎉 LEVEL COMPLETE!</h3><p>You earned <b>50 Coins</b>!</p><div class="adScreen">📺 Sponsored Ad Playing...<br>🍬 Try Candy Match!</div><p id="adTimer" style="font-weight:bold">Please watch ad: 5s</p><button class="big" id="claimBtn" disabled onclick="claimReward()">🔒 Watch Ad First...</button></div></div>
 <script>
 let candies=['🍭','🧸','🍬','🍩','🧁'];
 const SUPABASE_URL="https://pvwqacmxcknhjtsandag.supabase.co";
@@ -249,11 +244,23 @@ function fallSmooth(cb){
 }
 function checkWin(){if(score>=TARGET){pendingCoins=50;playSound('win');setTimeout(()=>showCompulsoryAd(),400);}}
 function showCompulsoryAd(){show_12265436().then(()=>{claimReward();}).catch(e=>{claimReward();});}
-function claimReward(){coins+=pendingCoins;level++;if(level<1)level=1;score=0;moves=18;combo=0;hammer=3;bomb=1;setNewTarget();save();playSound('coin');document.getElementById('adModal').classList.remove('show');showPopup('🎉 +50 Coins! Total: '+coins+' - Level '+level);make();startTimer();}
+function claimReward(){coins+=pendingCoins;level++;if(level<1)level=1;score=0;moves=18;combo=0;hammer=3;bomb=1;setNewTarget();save();playSound('coin');showPopup('🎉 +50 Coins! Total: '+coins+' - Level '+level);make();startTimer();}
 function shuffleBoard(){playSound('swipe');for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;let ts=special[i];special[i]=special[j];special[j]=ts;}renderBoard();}
 function useHammer(){if(hammer<=0){showPopup('No Hammer left!');return;}hammer--;save();hammerMode=true;showPopup('Tap a candy to smash it!');update();}
 function useBomb(){if(bomb<=0){showPopup('No Color Bomb left!');return;}bomb--;let c=candies[Math.floor(Math.random()*candies.length)];let cleared=0;board.forEach((v,i)=>{if(v===c&&!special[i]){if(v===targetCandy)targetCleared++;board[i]=null;special[i]=null;cleared++;}});score+=cleared*10;playSound('bust');fallSmooth(()=>{});showPopup('💥 Cleared '+cleared+' candies!');update();save();}
-function watchAd(){let btn=event.target;let old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Ad Playing...';show_12265436('pop').then(()=>{moves+=10;update();btn.disabled=false;btn.textContent=old;playSound('win');showPopup('+10 Moves Added!');}).catch(e=>{btn.disabled=false;btn.textContent=old;showPopup('Ad not ready, try again');});}
+
+// --- ADS - YOUR 2 FUNCTIONS - NO MIX-UP ---
+function watchAd(auto){
+  if(!auto) playSound('click');
+  // Rewarded interstitial
+  show_12265436().then(() => {
+    moves += 10; update(); playSound('win');
+    showPopup('+10 Moves Added!');
+  }).catch(e => {
+    moves += 10; update();
+    showPopup('+10 Moves Added!');
+  });
+}
 function daily(){let last=null;try{last=localStorage.getItem('cm_daily');}catch(e){}let today=new Date().toDateString();if(last===today){showPopup('Already claimed today!');return;}try{localStorage.setItem('cm_daily',today);}catch(e){}coins+=30;hammer=3;bomb=1;save();playSound('coin');showPopup('+30 Daily Bonus!');}
 function copyRef(){let l='https://t.me/candymatchs_bot/CandyMatch?startapp='+myCode;try{navigator.clipboard.writeText(l);}catch(e){let e2=document.getElementById('refLink');if(e2){e2.select();document.execCommand('copy');}}showPopup('Link Copied!');}
 function withdraw(){if(!document.getElementById('feeCheck').checked){showPopup('⚠️ Please tick the box first');return;}let a=document.getElementById('acct').value.trim();let n=document.getElementById('name').value.trim();if(coins<5000){document.getElementById('wmsg').textContent='Need 5000 Coins. You have '+coins;return;}if(!a||!n){document.getElementById('wmsg').textContent='Enter Name + BEP20 Address';return;}if(!a.startsWith('0x')||a.length<20){document.getElementById('wmsg').textContent='⚠️ Invalid BEP20 - Must start with 0x';return;}playSound('coin');document.getElementById('wmsg').textContent='✅ Request Sent! $'+(coins/100000).toFixed(4)+' USDT BEP20 to '+a+' ('+n+').';}
@@ -265,7 +272,18 @@ function buyColorBomb(){if(coins<100){document.getElementById('shopMsg').textCon
 function buyBomb(){buyBombRow();}
 async function handleReferral(){let refCode=null;try{let p=new URLSearchParams(location.search);if(p.get('ref'))refCode=p.get('ref');if(p.get('startapp'))refCode=p.get('startapp');if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initDataUnsafe&&Telegram.WebApp.initDataUnsafe.start_param)refCode=Telegram.WebApp.initDataUnsafe.start_param;}catch(e){}saveUserToSupabase();loadReferralCount();if(refCode&&refCode!==myCode){let got=false;try{got=localStorage.getItem('cm_got_ref');}catch(e){}if(!got){try{localStorage.setItem('cm_got_ref','1');}catch(e){}coins+=20;save();showPopup('Welcome! +20 Coins from your friend!');saveReferralToSupabase(refCode);}}}
 handleReferral();setNewTarget();make();setupSwipe();startTimer();loadFromCloud();
-show_12265436({ type: 'inApp', inAppSettings: { frequency: 2, capping: 0.1, interval: 30, timeout: 5, everyPage: false } })
+
+// In-App Interstitial
+show_12265436({
+  type: 'inApp',
+  inAppSettings: {
+    frequency: 2,
+    capping: 0.1,
+    interval: 30,
+    timeout: 25,
+    everyPage: false
+  }
+})
 </script>
 </body>
 </html>
