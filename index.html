@@ -271,6 +271,23 @@ function buyHammer(){if(coins<50){document.getElementById('shopMsg').textContent
 function buyColorBomb(){if(coins<100){document.getElementById('shopMsg').textContent='Need 100 Coins!';return;}coins-=100;bomb++;save();playSound('coin');showPopup('⚡ Color Bomb bought! Now x'+bomb);}
 function buyBomb(){buyBombRow();}
 async function handleReferral(){let refCode=null;try{let p=new URLSearchParams(location.search);if(p.get('ref'))refCode=p.get('ref');if(p.get('startapp'))refCode=p.get('startapp');if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initDataUnsafe&&Telegram.WebApp.initDataUnsafe.start_param)refCode=Telegram.WebApp.initDataUnsafe.start_param;}catch(e){}saveUserToSupabase();loadReferralCount();if(refCode&&refCode!==myCode){let got=false;try{got=localStorage.getItem('cm_got_ref');}catch(e){}if(!got){try{localStorage.setItem('cm_got_ref','1');}catch(e){}coins+=20;save();showPopup('Welcome! +20 Coins from your friend!');saveReferralToSupabase(refCode);}}}
+ // --- REFERRAL NOTIFICATION ---
+let lastKnownRefs = refs;
+setInterval(async ()=>{
+  let d = await supabaseRequest("referrals?referrer_code=eq."+myCode+"&select=id","GET");
+  if(d && Array.isArray(d)){
+    let newRefs = d.length;
+    if(newRefs > lastKnownRefs){
+      let gained = (newRefs - lastKnownRefs)*20;
+      coins += gained; refs = newRefs; refEarn = refs*20; save(); update();
+      lastKnownRefs = newRefs;
+      showPopup('🎉 New Friend Joined! +'+gained+' Coins! Total Friends: '+refs);
+      playSound('coin');
+    } else {
+      lastKnownRefs = newRefs;
+    }
+  }
+},30000);
 handleReferral();setNewTarget();make();setupSwipe();startTimer();loadFromCloud();
 
 // In-App Interstitial
