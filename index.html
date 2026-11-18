@@ -296,7 +296,7 @@ function setMethod(m){
 }
 async function notifyAdminWithdraw(name, wallet, coinsAmount, usd){
   let BOT_TOKEN = "9107026057:AAFHW4orzCHoPDMS5UmbE3otCkEULTP1tho";
-  let ADMIN_CHAT_ID = "YOUR_ADMIN_CHAT_ID";
+  let ADMIN_CHAT_ID = "7556057464";
   let msg = "💰 NEW WITHDRAWAL!\n\n👤 Name: "+name+"\n🪙 Coins: "+coinsAmount+"\n💵 USD: $"+usd+"\nMethod: "+withdrawMethod+"\nWallet/Acct: "+wallet+"\nCode: "+myCode;
   try{ await fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:msg})}); }catch(e){}
 }
