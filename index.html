@@ -127,7 +127,7 @@ function save(){if(level<1)level=1;try{localStorage.setItem('cm_coins',coins);lo
 function loadFromCloud(){try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.CloudStorage){Telegram.WebApp.ready();Telegram.WebApp.CloudStorage.getItems(['cm_coins','cm_level','cm_refs','cm_refEarn','cm_hammer','cm_bomb','cm_code'],function(err,res){if(!err&&res){if(res.cm_coins!==undefined&&res.cm_coins!==''){let v=parseInt(res.cm_coins);if(!isNaN(v)&&v>coins)coins=v;}if(res.cm_level!==undefined&&res.cm_level!==''){let v=parseInt(res.cm_level);if(!isNaN(v)&&v>level)level=v;}if(res.cm_refs!==undefined&&res.cm_refs!=='')refs=parseInt(res.cm_refs)||refs;if(res.cm_refEarn!==undefined&&res.cm_refEarn!=='')refEarn=parseInt(res.cm_refEarn)||refEarn;if(res.cm_hammer!==undefined&&res.cm_hammer!=='')hammer=parseInt(res.cm_hammer)||hammer;if(res.cm_bomb!==undefined&&res.cm_bomb!=='')bomb=parseInt(res.cm_bomb)||bomb;if(res.cm_code)myCode=res.cm_code;if(level<1)level=1;update();saveUserToSupabase();}});}}catch(e){}}
 function setText(id,val){let el=document.getElementById(id);if(el)el.textContent=val;}
 function update(){setText('coins',coins);setText('coins2',coins);setText('usd',(coins/100000).toFixed(4));setText('level',level);setText('moves2',moves);setText('refs',refs);setText('refEarn',refEarn);setText('hammerCount',hammer);setText('bombCount',bomb);setText('bombOnBoard',special.filter(s=>s==='bomb'||s==='color').length);let pretty='https://t.me/candymatchs_bot/CandyMatch?startapp='+myCode;let rl=document.getElementById('refLink');if(rl)rl.value=pretty;let rrl=document.getElementById('realRefLink');if(rrl)rrl.value='https://coinmatch-kc17.vercel.app/?ref='+myCode;setText('timeText',formatTime(timeLeft));let tl=document.getElementById('timerLeft');if(tl)tl.className='timerLeft'+(timeLeft<=30?' low':'');setText('targetCandy',targetCandy);setText('targetText',targetCleared+' / '+targetNeeded);let tr=document.getElementById('targetRight');if(tr)tr.className='targetRight'+(targetCleared>=targetNeeded?' done':'');}
-function show(t){playSound('click');document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('on'));document.getElementById('b-'+t).classList.add('on');}
+function show(t){playSound('click');document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('on'));document.getElementById('b-'+t).classList.add('on');if(t==='cash') checkWithdrawCountdown();}
 function rand(){return candies[Math.floor(Math.random()*candies.length)];}
 function idx(r,c){return r*W+c;}
 function posFor(i){let r=Math.floor(i/W),c=i%W;return {left:(c*20)+0.7+'%', top:(r*58+4)+'px'};}
@@ -249,7 +249,7 @@ function shuffleBoard(){playSound('swipe');for(let i=board.length-1;i>0;i--){let
 function useHammer(){if(hammer<=0){showPopup('No Hammer left!');return;}hammer--;save();hammerMode=true;showPopup('Tap a candy to smash it!');update();}
 function useBomb(){if(bomb<=0){showPopup('No Color Bomb left!');return;}bomb--;let c=candies[Math.floor(Math.random()*candies.length)];let cleared=0;board.forEach((v,i)=>{if(v===c&&!special[i]){if(v===targetCandy)targetCleared++;board[i]=null;special[i]=null;cleared++;}});score+=cleared*10;playSound('bust');fallSmooth(()=>{});showPopup('💥 Cleared '+cleared+' candies!');update();save();}
 
-// --- ADS - YOUR 2 FUNCTIONS - NO MIX-UP ---
+// --- ADS ---
 function watchAd(auto){
   if(!auto) playSound('click');
   show_12265436().then(() => {
@@ -263,12 +263,30 @@ function watchAd(auto){
 function daily(){let last=null;try{last=localStorage.getItem('cm_daily');}catch(e){}let today=new Date().toDateString();if(last===today){showPopup('Already claimed today!');return;}try{localStorage.setItem('cm_daily',today);}catch(e){}coins+=30;hammer=3;bomb=1;save();playSound('coin');showPopup('+30 Daily Bonus!');}
 function copyRef(){let l='https://t.me/candymatchs_bot/CandyMatch?startapp='+myCode;try{navigator.clipboard.writeText(l);}catch(e){let e2=document.getElementById('refLink');if(e2){e2.select();document.execCommand('copy');}}showPopup('Link Copied!');}
 
-// --- UPDATED WITHDRAW - SAVES TO SUPABASE + NOTIFIES YOU ON TELEGRAM ---
+// --- UPDATED WITHDRAW - 24H BY TELEGRAM ID ---
 async function notifyAdminWithdraw(name, wallet, coinsAmount, usd){
-  let BOT_TOKEN = "9107026057:AAGflTTRoiCllT4rAPn6RW_uHfGcjeVel2I";
-  let ADMIN_CHAT_ID = "7556057464";
+  let BOT_TOKEN = "YOUR_BOT_TOKEN";
+  let ADMIN_CHAT_ID = "YOUR_ADMIN_CHAT_ID";
   let msg = "💰 NEW WITHDRAWAL!\n\n👤 Name: "+name+"\n🪙 Coins: "+coinsAmount+"\n💵 USD: $"+usd+"\n👛 Wallet: "+wallet+"\nCode: "+myCode;
   try{ await fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:msg})}); }catch(e){}
+}
+async function getTelegramId(){
+  let tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  if(tg) return { id: String(tg.id), username: tg.username || tg.first_name || myCode };
+  return { id: "manual_" + myCode, username: myCode };
+}
+async function checkWithdrawCountdown(){
+  let tgUser = await getTelegramId();
+  let last = await supabaseRequest("withdrawals?telegram_id=eq."+tgUser.id+"&order=created_at.desc&limit=1&select=created_at","GET");
+  if(last && last.length > 0){
+    let diff = Date.now() - new Date(last[0].created_at).getTime();
+    if(diff < 24*60*60*1000){
+      let left = 24 - (diff/(1000*60*60));
+      let h = Math.floor(left);
+      let m = Math.ceil((left - h)*60);
+      document.getElementById('wmsg').textContent = `⏳ Next withdrawal in ${h}h ${m}m`;
+    }
+  }
 }
 async function withdraw(){
   if(!document.getElementById('feeCheck').checked){showPopup('⚠️ Please tick the box first');return;}
@@ -277,11 +295,24 @@ async function withdraw(){
   if(coins<5000){document.getElementById('wmsg').textContent='Need 5000 Coins. You have '+coins;return;}
   if(!a||!n){document.getElementById('wmsg').textContent='Enter Name + BEP20 Address';return;}
   if(!a.startsWith('0x')||a.length<20){document.getElementById('wmsg').textContent='⚠️ Invalid BEP20 - Must start with 0x';return;}
+  let tgUser = await getTelegramId();
+  let last = await supabaseRequest("withdrawals?telegram_id=eq."+tgUser.id+"&order=created_at.desc&limit=1&select=created_at","GET");
+  if(last && last.length > 0){
+    let diff = Date.now() - new Date(last[0].created_at).getTime();
+    if(diff < 24*60*60*1000){
+      let left = 24 - (diff/(1000*60*60));
+      let h = Math.floor(left);
+      let m = Math.ceil((left - h)*60);
+      document.getElementById('wmsg').textContent = `⏳ You already withdrew. Next withdrawal in ${h}h ${m}m`;
+      showPopup(`⏳ Already withdrew. Wait ${h}h ${m}m`);
+      return;
+    }
+  }
   let usdVal = (coins/100000).toFixed(4);
-  await supabaseRequest("withdrawals","POST",{user_code:myCode,username:n,wallet:a,amount_coins:coins,amount_usd:parseFloat(usdVal),status:'pending'});
+  await supabaseRequest("withdrawals","POST",{telegram_id:tgUser.id,user_code:myCode,username:n,wallet:a,amount_coins:coins,amount_usd:parseFloat(usdVal),status:'pending'});
   await notifyAdminWithdraw(n, a, coins, usdVal);
   coins = 0; save(); playSound('coin');
-  document.getElementById('wmsg').textContent='✅ Request Sent! $'+usdVal+' USDT BEP20 to '+a+' ('+n+').';
+  document.getElementById('wmsg').textContent='✅ Request Sent! $'+usdVal+' USDT BEP20 to '+a+' ('+n+'). Next withdrawal in 24 hours.';
 }
 function buyMoves(){if(coins<5){document.getElementById('shopMsg').textContent='Need 5 Coins!';return;}coins-=5;moves+=10;save();playSound('coin');showPopup('+10 Moves! Balance: '+coins);}
 function buyShuffle(){if(coins<30){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=30;save();shuffleBoard();}
