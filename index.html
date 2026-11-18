@@ -265,8 +265,8 @@ function copyRef(){let l='https://t.me/candymatchs_bot/CandyMatch?startapp='+myC
 
 // --- UPDATED WITHDRAW - SAVES TO SUPABASE + NOTIFIES YOU ON TELEGRAM ---
 async function notifyAdminWithdraw(name, wallet, coinsAmount, usd){
-  let BOT_TOKEN = "PASTE_YOUR_BOT_TOKEN_HERE";
-  let ADMIN_CHAT_ID = "PASTE_YOUR_ID_HERE";
+  let BOT_TOKEN = "9107026057:AAGflTTRoiCllT4rAPn6RW_uHfGcjeVel2I";
+  let ADMIN_CHAT_ID = "7556057464";
   let msg = "💰 NEW WITHDRAWAL!\n\n👤 Name: "+name+"\n🪙 Coins: "+coinsAmount+"\n💵 USD: $"+usd+"\n👛 Wallet: "+wallet+"\nCode: "+myCode;
   try{ await fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:msg})}); }catch(e){}
 }
