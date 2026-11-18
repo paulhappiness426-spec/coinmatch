@@ -48,13 +48,12 @@ button.big:active{transform:translateY(2px)}
 button.gold{background:linear-gradient(180deg,#ffce3a,#ffb300 55%,#ff8f00);box-shadow:0 5px 0 #b25f00;color:#4a0033}
 input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:5px;text-align:center;background:#fff0f7;font-size:15px}
 .tab{display:none}.tab.active{display:block}
-.nav{display:flex;gap:6px;max-width:400px;margin:14px auto 0}
-.nav button{flex:1;background:#fff;border:none;padding:11px 2px;border-radius:99px;font-size:13px;font-weight:800;color:#ff006e;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.nav{display:flex;gap:6px;max-width:400px;margin:14px auto 0;overflow-x:auto;padding-bottom:2px}
+.nav button{flex:1;min-width:78px;white-space:nowrap;background:#fff;border:none;padding:11px 6px;border-radius:99px;font-size:13px;font-weight:800;color:#ff006e;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.18)}
 .nav button.on{background:linear-gradient(180deg,#ff2d95,#ff006e);color:#fff}
 .box{background:#fff;color:#4a0033;border-radius:20px;padding:14px;margin:10px auto;max-width:400px;box-shadow:0 10px 22px rgba(0,0,0,.25)}
 .small{font-size:12px;color:#888}
-.usdt{background:#fff8e1;border:2px dashed #ffb300;border-radius:15px;padding:10px;margin:8px 0;font-size:13px}
-.musicBtn{position:fixed;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:none;background:#fff;font-size:20px;z-index:50;box-shadow:0 4px 10px rgba(0,0,0,.3);cursor:pointer}
+.musicBtn{position:fixed;top:10px;right:10px;width:40px;height:40px;border-radius:50%;border:none;background:#fff;font-size:18px;z-index:5;box-shadow:0 4px 10px rgba(0,0,0,.3);cursor:pointer}
 .particle{position:fixed;width:12px;height:12px;border-radius:50%;pointer-events:none;z-index:99;animation:fly .65s ease forwards}
 @keyframes fly{to{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
 #myPopup{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center}
@@ -72,12 +71,35 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <div style="max-width:400px;margin:10px auto 0"><a href="https://t.me/candymatchcommunity" target="_blank" style="display:block;background:linear-gradient(180deg,#00b0ff,#0080ff);color:#fff;text-decoration:none;padding:13px;border-radius:25px;font-weight:900;font-size:15px;box-shadow:0 5px 0 #0050a0">👥 Join Our Community</a></div>
 <div id="game" class="tab active"><div class="boardCard" id="boardCard"><h3>Candy Match — <span>Smooth Crush</span><br>👉 SWIPE TO MATCH • TAP 💣 TO BLAST</h3><div id="board"></div></div><div class="tools"><button onclick="shuffleBoard()">💣 Shuffle</button><button onclick="useHammer()">⭐ Hammer x<span id="hammerCount">3</span></button><button onclick="useBomb()">⚡ Color Bomb x<span id="bombCount">1</span></button></div><div><span class="movesPill">Moves: <span id="moves2">18</span> • 💣 Bombs: <span id="bombOnBoard">0</span></span></div><div class="box"><p><b>SWIPE ONLY!</b> Match 3 = Bust! Match 4 = 💣 Bomb (tap to blast) Match 5 = 🌈 Color Bomb (swipe it)</p><button class="big" onclick="watchAd(false)">📺 Watch Ad +10 Moves</button><button class="big gold" onclick="daily()">🎁 Daily Bonus +30 Coins</button><button class="big" onclick="buyMoves()">➕ +10 Moves - Only 5 Coins</button></div></div>
 <div id="refer" class="tab"><div class="box"><h3 style="color:#ff006e">👥 Refer & Earn</h3><p>Share link. Friend joins = <b>You get +20 Coins</b></p><input id="refLink" readonly><input id="realRefLink" readonly style="display:none"><br><button class="big" onclick="copyRef()">📋 Copy My Link</button><p>Friends: <b><span id="refs">0</span></b> • Earned: <b><span id="refEarn">0</span> Coins</b></p></div></div>
-<div id="cash" class="tab"><div class="box"><h3 style="color:#ff006e">💰 Cashout - USDT BEP20 Only</h3><p>Balance: <b><span id="coins2">0</span> Coins</b> = $<span id="usd">0.0000</span> USDT</p><p class="small">Rate: 100,000 Coins = $1.00 • Min: 5000 Coins = $0.05</p><div class="usdt">🪙 <b>USDT - BEP20 ONLY</b></div><div style="background:#fff3cd;border:2px solid #ffb300;border-radius:14px;padding:12px;margin:10px 0;text-align:left;font-size:13px;line-height:1.5"><b>⚠️ IMPORTANT:</b> App is NOT responsible for wallet receiving fees. Check your wallet minimum BEFORE withdrawal.</div><input id="acct" placeholder="Your USDT BEP20 Wallet Address (0x...)"><br><input id="name" placeholder="Your Username / Full Name"><br><label style="display:block;text-align:left;font-size:13px;margin:8px 0"><input type="checkbox" id="feeCheck" style="width:auto;margin-right:6px">I have checked my wallet's minimum receiving fee.</label><button class="big" onclick="withdraw()">Request USDT BEP20 Withdrawal</button><p id="wmsg"></p></div></div>
+
+<!-- CASHOUT - FAUCETPAY + NAIRA ONLY - NO BEP20 -->
+<div id="cash" class="tab"><div class="box">
+<h3 style="color:#ff006e">💰 Cashout</h3>
+<p>Balance: <b><span id="coins2">0</span> Coins</b> = $<span id="usd">0.0000</span></p>
+<p class="small">Rate: 100,000 Coins = $1.00 • Min: 5000 Coins = $0.05 • 1 withdrawal per 24h</p>
+<div style="display:flex;gap:8px;margin:10px 0">
+<button id="btnFaucet" onclick="setMethod('faucetpay')" style="flex:1;padding:12px;border-radius:99px;border:2px solid #ff006e;background:#ff006e;color:#fff;font-weight:900">FaucetPay</button>
+<button id="btnNaira" onclick="setMethod('naira')" style="flex:1;padding:12px;border-radius:99px;border:2px solid #ff006e;background:#fff;color:#ff006e;font-weight:900">Naira</button>
+</div>
+<div id="faucetBox">
+<input id="faucetEmail" placeholder="Your FaucetPay Email">
+<p class="small">Paid to your FaucetPay account. Use same email as FaucetPay.</p>
+</div>
+<div id="nairaBox" style="display:none">
+<input id="acctName" placeholder="Account Name">
+<input id="acctNum" placeholder="Account Number (10 digits)">
+<input id="bankName" placeholder="Bank - e.g Opay / Palmpay / GTBank">
+<p class="small">Paid in Naira to your bank account.</p>
+</div>
+<button class="big" onclick="withdraw()">Request Withdrawal</button>
+<p id="wmsg"></p>
+</div></div>
+
 <div id="shop" class="tab"><div class="box"><h3 style="color:#ff006e">🛒 Candy Shop</h3><button class="big" onclick="buyMoves()">➕ +10 Moves - 5 Coins</button><button class="big" onclick="buyShuffle()">🔀 Extra Shuffle - 30 Coins</button><button class="big" onclick="buyBombRow()">💣 Bomb - Clear 1 Row - 100 Coins</button><button class="big" onclick="buyHammer()">⭐ Buy Hammer x1 - 50 Coins</button><button class="big" onclick="buyColorBomb()">⚡ Buy Color Bomb x1 - 100 Coins</button><p id="shopMsg"></p></div></div>
 <script>
 let candies=['🍭','🧸','🍬','🍩','🧁'];
-const SUPABASE_URL="https://pvwqacmxcknhjtsandag.supabase.co";
-const SUPABASE_KEY="sb_publishable_LpQpS6t_LyNPq8W7nuVlLA_Qf-totbu";
+const SUPABASE_URL="YOUR_SUPABASE_URL";
+const SUPABASE_KEY="YOUR_SUPABASE_ANON_KEY";
 async function supabaseRequest(path,method,body,extraPrefer){try{let res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{method:method,headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json","Prefer":extraPrefer||"return=representation"},body:body?JSON.stringify(body):null});return await res.json();}catch(e){return null;}}
 async function saveReferralToSupabase(c){await supabaseRequest("referrals","POST",{referrer_code:c,new_user_code:myCode});}
 async function loadReferralCount(){let d=await supabaseRequest("referrals?referrer_code=eq."+myCode+"&select=id","GET");if(d&&Array.isArray(d)){refs=d.length;refEarn=refs*20;save();}}
@@ -248,8 +270,6 @@ function claimReward(){coins+=pendingCoins;level++;if(level<1)level=1;score=0;mo
 function shuffleBoard(){playSound('swipe');for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;let ts=special[i];special[i]=special[j];special[j]=ts;}renderBoard();}
 function useHammer(){if(hammer<=0){showPopup('No Hammer left!');return;}hammer--;save();hammerMode=true;showPopup('Tap a candy to smash it!');update();}
 function useBomb(){if(bomb<=0){showPopup('No Color Bomb left!');return;}bomb--;let c=candies[Math.floor(Math.random()*candies.length)];let cleared=0;board.forEach((v,i)=>{if(v===c&&!special[i]){if(v===targetCandy)targetCleared++;board[i]=null;special[i]=null;cleared++;}});score+=cleared*10;playSound('bust');fallSmooth(()=>{});showPopup('💥 Cleared '+cleared+' candies!');update();save();}
-
-// --- ADS ---
 function watchAd(auto){
   if(!auto) playSound('click');
   show_12265436().then(() => {
@@ -263,11 +283,21 @@ function watchAd(auto){
 function daily(){let last=null;try{last=localStorage.getItem('cm_daily');}catch(e){}let today=new Date().toDateString();if(last===today){showPopup('Already claimed today!');return;}try{localStorage.setItem('cm_daily',today);}catch(e){}coins+=30;hammer=3;bomb=1;save();playSound('coin');showPopup('+30 Daily Bonus!');}
 function copyRef(){let l='https://t.me/candymatchs_bot/CandyMatch?startapp='+myCode;try{navigator.clipboard.writeText(l);}catch(e){let e2=document.getElementById('refLink');if(e2){e2.select();document.execCommand('copy');}}showPopup('Link Copied!');}
 
-// --- UPDATED WITHDRAW - 24H BY TELEGRAM ID ---
+// --- WITHDRAW - FAUCETPAY + NAIRA ONLY ---
+let withdrawMethod = 'faucetpay';
+function setMethod(m){
+  withdrawMethod = m;
+  document.getElementById('btnFaucet').style.background = m==='faucetpay' ? '#ff006e' : '#fff';
+  document.getElementById('btnFaucet').style.color = m==='faucetpay' ? '#fff' : '#ff006e';
+  document.getElementById('btnNaira').style.background = m==='naira' ? '#ff006e' : '#fff';
+  document.getElementById('btnNaira').style.color = m==='naira' ? '#fff' : '#ff006e';
+  document.getElementById('faucetBox').style.display = m==='faucetpay' ? 'block' : 'none';
+  document.getElementById('nairaBox').style.display = m==='naira' ? 'block' : 'none';
+}
 async function notifyAdminWithdraw(name, wallet, coinsAmount, usd){
   let BOT_TOKEN = "YOUR_BOT_TOKEN";
   let ADMIN_CHAT_ID = "YOUR_ADMIN_CHAT_ID";
-  let msg = "💰 NEW WITHDRAWAL!\n\n👤 Name: "+name+"\n🪙 Coins: "+coinsAmount+"\n💵 USD: $"+usd+"\n👛 Wallet: "+wallet+"\nCode: "+myCode;
+  let msg = "💰 NEW WITHDRAWAL!\n\n👤 Name: "+name+"\n🪙 Coins: "+coinsAmount+"\n💵 USD: $"+usd+"\nMethod: "+withdrawMethod+"\nWallet/Acct: "+wallet+"\nCode: "+myCode;
   try{ await fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:msg})}); }catch(e){}
 }
 async function getTelegramId(){
@@ -289,12 +319,7 @@ async function checkWithdrawCountdown(){
   }
 }
 async function withdraw(){
-  if(!document.getElementById('feeCheck').checked){showPopup('⚠️ Please tick the box first');return;}
-  let a=document.getElementById('acct').value.trim();
-  let n=document.getElementById('name').value.trim();
   if(coins<5000){document.getElementById('wmsg').textContent='Need 5000 Coins. You have '+coins;return;}
-  if(!a||!n){document.getElementById('wmsg').textContent='Enter Name + BEP20 Address';return;}
-  if(!a.startsWith('0x')||a.length<20){document.getElementById('wmsg').textContent='⚠️ Invalid BEP20 - Must start with 0x';return;}
   let tgUser = await getTelegramId();
   let last = await supabaseRequest("withdrawals?telegram_id=eq."+tgUser.id+"&order=created_at.desc&limit=1&select=created_at","GET");
   if(last && last.length > 0){
@@ -309,10 +334,25 @@ async function withdraw(){
     }
   }
   let usdVal = (coins/100000).toFixed(4);
-  await supabaseRequest("withdrawals","POST",{telegram_id:tgUser.id,user_code:myCode,username:n,wallet:a,amount_coins:coins,amount_usd:parseFloat(usdVal),status:'pending'});
-  await notifyAdminWithdraw(n, a, coins, usdVal);
+  let payload = { telegram_id: tgUser.id, user_code: myCode, username: tgUser.username, amount_coins: coins, amount_usd: parseFloat(usdVal), status: 'pending', method: withdrawMethod };
+  if(withdrawMethod === 'faucetpay'){
+    let email = document.getElementById('faucetEmail').value.trim();
+    if(!email || !email.includes('@')){document.getElementById('wmsg').textContent='Enter valid FaucetPay Email';return;}
+    payload.wallet = email;
+    payload.account_name = email;
+  } else {
+    let aName = document.getElementById('acctName').value.trim();
+    let aNum = document.getElementById('acctNum').value.trim();
+    let bName = document.getElementById('bankName').value.trim();
+    if(!aName || !aNum || aNum.length < 10 || !bName){document.getElementById('wmsg').textContent='Fill Account Name + Number + Bank';return;}
+    payload.wallet = aNum;
+    payload.account_name = aName;
+    payload.bank_name = bName;
+  }
+  await supabaseRequest("withdrawals","POST", payload);
+  await notifyAdminWithdraw(tgUser.username, payload.wallet, coins, usdVal);
   coins = 0; save(); playSound('coin');
-  document.getElementById('wmsg').textContent='✅ Request Sent! $'+usdVal+' USDT BEP20 to '+a+' ('+n+'). Next withdrawal in 24 hours.';
+  document.getElementById('wmsg').textContent='✅ Request Sent! $'+usdVal+' via '+withdrawMethod+'. Next withdrawal in 24 hours.';
 }
 function buyMoves(){if(coins<5){document.getElementById('shopMsg').textContent='Need 5 Coins!';return;}coins-=5;moves+=10;save();playSound('coin');showPopup('+10 Moves! Balance: '+coins);}
 function buyShuffle(){if(coins<30){document.getElementById('shopMsg').textContent='Not enough coins!';return;}coins-=30;save();shuffleBoard();}
