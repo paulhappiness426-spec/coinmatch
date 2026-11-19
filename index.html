@@ -86,7 +86,7 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <div id="nairaBox" style="display:none">
 <input id="acctName" placeholder="Account Name">
 <input id="acctNum" placeholder="Account Number (10 digits)">
-<input id="bankName" placeholder="Bank - e.g Opay / Palmpay / GTBank">
+<input id="bankName" placeholder="Bank - e.g Opay / Palmpay / Moniepoint">
 <p class="small">Paid in Naira to your bank account.</p>
 </div>
 <button class="big" onclick="withdraw()">Request Withdrawal</button>
@@ -97,8 +97,8 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 let candies=['🍭','🧸','🍬','🍩','🧁'];
 const SUPABASE_URL="https://pvwqacmxcknhjtsandag.supabase.co";
 const SUPABASE_KEY="sb_publishable_LpQpS6t_LyNPq8W7nuVlLA_Qf-totbu";
-const BOT_TOKEN="YOUR_BOT_TOKEN";
-const ADMIN_CHAT_ID="YOUR_ADMIN_CHAT_ID";
+const BOT_TOKEN="9107026057:AAFHW4orzCHoPDMS5UmbE3otCkEULTP1tho";
+const ADMIN_CHAT_ID="7556057464";
 async function supabaseRequest(path,method,body,extraPrefer){try{let res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{method:method,headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json","Prefer":extraPrefer||"return=representation"},body:body?JSON.stringify(body):null});return await res.json();}catch(e){return null;}}
 async function saveReferralToSupabase(c){await supabaseRequest("referrals","POST",{referrer_code:c,new_user_code:myCode});}
 async function loadReferralCount(){let d=await supabaseRequest("referrals?referrer_code=eq."+myCode+"&select=id","GET");if(d&&Array.isArray(d)){refs=d.length;refEarn=refs*20;save();}}
