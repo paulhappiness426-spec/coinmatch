@@ -71,12 +71,10 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <div style="max-width:400px;margin:10px auto 0"><a href="https://t.me/candymatchcommunity" target="_blank" style="display:block;background:linear-gradient(180deg,#00b0ff,#0080ff);color:#fff;text-decoration:none;padding:13px;border-radius:25px;font-weight:900;font-size:15px;box-shadow:0 5px 0 #0050a0">👥 Join Our Community</a></div>
 <div id="game" class="tab active"><div class="boardCard" id="boardCard"><h3>Candy Match — <span>Smooth Crush</span><br>👉 SWIPE TO MATCH • TAP 💣 TO BLAST</h3><div id="board"></div></div><div class="tools"><button onclick="shuffleBoard()">💣 Shuffle</button><button onclick="useHammer()">⭐ Hammer x<span id="hammerCount">3</span></button><button onclick="useBomb()">⚡ Color Bomb x<span id="bombCount">1</span></button></div><div><span class="movesPill">Moves: <span id="moves2">18</span> • 💣 Bombs: <span id="bombOnBoard">0</span></span></div><div class="box"><p><b>SWIPE ONLY!</b> Match 3 = Bust! Match 4 = 💣 Bomb (tap to blast) Match 5 = 🌈 Color Bomb (swipe it)</p><button class="big" onclick="watchAd(false)">📺 Watch Ad +10 Moves</button><button class="big gold" onclick="daily()">🎁 Daily Bonus +30 Coins</button><button class="big" onclick="buyMoves()">➕ +10 Moves - Only 5 Coins</button></div></div>
 <div id="refer" class="tab"><div class="box"><h3 style="color:#ff006e">👥 Refer & Earn</h3><p>Share link. Friend joins = <b>You get +20 Coins</b></p><input id="refLink" readonly><input id="realRefLink" readonly style="display:none"><br><button class="big" onclick="copyRef()">📋 Copy My Link</button><p>Friends: <b><span id="refs">0</span></b> • Earned: <b><span id="refEarn">0</span> Coins</b></p></div></div>
-
-<!-- CASHOUT - FAUCETPAY + NAIRA ONLY - NO BEP20 -->
 <div id="cash" class="tab"><div class="box">
 <h3 style="color:#ff006e">💰 Cashout</h3>
 <p>Balance: <b><span id="coins2">0</span> Coins</b> = $<span id="usd">0.0000</span></p>
-<p class="small">Rate: 100,000 Coins = $1.00 • Min: 5000 Coins = $0.05 • 1 withdrawal per 24h</p>
+<p class="small">Rate: 1,000,000 Coins = $1.00 • Min: 500,000 Coins = $0.50 • 1 withdrawal per 24h</p>
 <div style="display:flex;gap:8px;margin:10px 0">
 <button id="btnFaucet" onclick="setMethod('faucetpay')" style="flex:1;padding:12px;border-radius:99px;border:2px solid #ff006e;background:#ff006e;color:#fff;font-weight:900">FaucetPay</button>
 <button id="btnNaira" onclick="setMethod('naira')" style="flex:1;padding:12px;border-radius:99px;border:2px solid #ff006e;background:#fff;color:#ff006e;font-weight:900">Naira</button>
@@ -88,18 +86,19 @@ input{padding:12px;border-radius:15px;border:2px solid #ff9ecb;width:88%;margin:
 <div id="nairaBox" style="display:none">
 <input id="acctName" placeholder="Account Name">
 <input id="acctNum" placeholder="Account Number (10 digits)">
-<input id="bankName" placeholder="Bank - e.g Opay / Palmpay / Moniepoint">
+<input id="bankName" placeholder="Bank - e.g Opay / Palmpay / GTBank">
 <p class="small">Paid in Naira to your bank account.</p>
 </div>
 <button class="big" onclick="withdraw()">Request Withdrawal</button>
 <p id="wmsg"></p>
 </div></div>
-
 <div id="shop" class="tab"><div class="box"><h3 style="color:#ff006e">🛒 Candy Shop</h3><button class="big" onclick="buyMoves()">➕ +10 Moves - 5 Coins</button><button class="big" onclick="buyShuffle()">🔀 Extra Shuffle - 30 Coins</button><button class="big" onclick="buyBombRow()">💣 Bomb - Clear 1 Row - 100 Coins</button><button class="big" onclick="buyHammer()">⭐ Buy Hammer x1 - 50 Coins</button><button class="big" onclick="buyColorBomb()">⚡ Buy Color Bomb x1 - 100 Coins</button><p id="shopMsg"></p></div></div>
 <script>
 let candies=['🍭','🧸','🍬','🍩','🧁'];
-const SUPABASE_URL="https://pvwqacmxcknhjtsandag.supabase.co";
-const SUPABASE_KEY="sb_publishable_LpQpS6t_LyNPq8W7nuVlLA_Qf-totbu";
+const SUPABASE_URL="YOUR_SUPABASE_URL";
+const SUPABASE_KEY="YOUR_SUPABASE_ANON_KEY";
+const BOT_TOKEN="YOUR_BOT_TOKEN";
+const ADMIN_CHAT_ID="YOUR_ADMIN_CHAT_ID";
 async function supabaseRequest(path,method,body,extraPrefer){try{let res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{method:method,headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json","Prefer":extraPrefer||"return=representation"},body:body?JSON.stringify(body):null});return await res.json();}catch(e){return null;}}
 async function saveReferralToSupabase(c){await supabaseRequest("referrals","POST",{referrer_code:c,new_user_code:myCode});}
 async function loadReferralCount(){let d=await supabaseRequest("referrals?referrer_code=eq."+myCode+"&select=id","GET");if(d&&Array.isArray(d)){refs=d.length;refEarn=refs*20;save();}}
@@ -148,7 +147,7 @@ document.addEventListener('click',()=>{if(musicOn&&!musicTimer)startMusic();},{o
 function save(){if(level<1)level=1;try{localStorage.setItem('cm_coins',coins);localStorage.setItem('cm_level',level);localStorage.setItem('cm_refs',refs);localStorage.setItem('cm_refEarn',refEarn);localStorage.setItem('cm_hammer',hammer);localStorage.setItem('cm_bomb',bomb);localStorage.setItem('cm_code',myCode);}catch(e){}try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.CloudStorage){Telegram.WebApp.CloudStorage.setItem('cm_coins',String(coins));Telegram.WebApp.CloudStorage.setItem('cm_level',String(level));Telegram.WebApp.CloudStorage.setItem('cm_refs',String(refs));Telegram.WebApp.CloudStorage.setItem('cm_refEarn',String(refEarn));Telegram.WebApp.CloudStorage.setItem('cm_hammer',String(hammer));Telegram.WebApp.CloudStorage.setItem('cm_bomb',String(bomb));Telegram.WebApp.CloudStorage.setItem('cm_code',String(myCode));}}catch(e){}update();}
 function loadFromCloud(){try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.CloudStorage){Telegram.WebApp.ready();Telegram.WebApp.CloudStorage.getItems(['cm_coins','cm_level','cm_refs','cm_refEarn','cm_hammer','cm_bomb','cm_code'],function(err,res){if(!err&&res){if(res.cm_coins!==undefined&&res.cm_coins!==''){let v=parseInt(res.cm_coins);if(!isNaN(v)&&v>coins)coins=v;}if(res.cm_level!==undefined&&res.cm_level!==''){let v=parseInt(res.cm_level);if(!isNaN(v)&&v>level)level=v;}if(res.cm_refs!==undefined&&res.cm_refs!=='')refs=parseInt(res.cm_refs)||refs;if(res.cm_refEarn!==undefined&&res.cm_refEarn!=='')refEarn=parseInt(res.cm_refEarn)||refEarn;if(res.cm_hammer!==undefined&&res.cm_hammer!=='')hammer=parseInt(res.cm_hammer)||hammer;if(res.cm_bomb!==undefined&&res.cm_bomb!=='')bomb=parseInt(res.cm_bomb)||bomb;if(res.cm_code)myCode=res.cm_code;if(level<1)level=1;update();saveUserToSupabase();}});}}catch(e){}}
 function setText(id,val){let el=document.getElementById(id);if(el)el.textContent=val;}
-function update(){setText('coins',coins);setText('coins2',coins);setText('usd',(coins/100000).toFixed(4));setText('level',level);setText('moves2',moves);setText('refs',refs);setText('refEarn',refEarn);setText('hammerCount',hammer);setText('bombCount',bomb);setText('bombOnBoard',special.filter(s=>s==='bomb'||s==='color').length);let pretty='https://t.me/candymatchs_bot/CandyMatch?startapp='+myCode;let rl=document.getElementById('refLink');if(rl)rl.value=pretty;let rrl=document.getElementById('realRefLink');if(rrl)rrl.value='https://coinmatch-kc17.vercel.app/?ref='+myCode;setText('timeText',formatTime(timeLeft));let tl=document.getElementById('timerLeft');if(tl)tl.className='timerLeft'+(timeLeft<=30?' low':'');setText('targetCandy',targetCandy);setText('targetText',targetCleared+' / '+targetNeeded);let tr=document.getElementById('targetRight');if(tr)tr.className='targetRight'+(targetCleared>=targetNeeded?' done':'');}
+function update(){setText('coins',coins);setText('coins2',coins);setText('usd',(coins/1000000).toFixed(4));setText('level',level);setText('moves2',moves);setText('refs',refs);setText('refEarn',refEarn);setText('hammerCount',hammer);setText('bombCount',bomb);setText('bombOnBoard',special.filter(s=>s==='bomb'||s==='color').length);let pretty='https://t.me/candymatchs_bot/CandyMatch?startapp='+myCode;let rl=document.getElementById('refLink');if(rl)rl.value=pretty;let rrl=document.getElementById('realRefLink');if(rrl)rrl.value='https://coinmatch-kc17.vercel.app/?ref='+myCode;setText('timeText',formatTime(timeLeft));let tl=document.getElementById('timerLeft');if(tl)tl.className='timerLeft'+(timeLeft<=30?' low':'');setText('targetCandy',targetCandy);setText('targetText',targetCleared+' / '+targetNeeded);let tr=document.getElementById('targetRight');if(tr)tr.className='targetRight'+(targetCleared>=targetNeeded?' done':'');}
 function show(t){playSound('click');document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('on'));document.getElementById('b-'+t).classList.add('on');if(t==='cash') checkWithdrawCountdown();}
 function rand(){return candies[Math.floor(Math.random()*candies.length)];}
 function idx(r,c){return r*W+c;}
@@ -264,9 +263,9 @@ function fallSmooth(cb){
  renderBoard();
  setTimeout(()=>{ if(cb)cb(); },340);
 }
-function checkWin(){if(score>=TARGET){pendingCoins=50;playSound('win');setTimeout(()=>showCompulsoryAd(),400);}}
+function checkWin(){if(score>=TARGET){pendingCoins=500;playSound('win');setTimeout(()=>showCompulsoryAd(),400);}}
 function showCompulsoryAd(){show_12265436().then(()=>{claimReward();}).catch(e=>{claimReward();});}
-function claimReward(){coins+=pendingCoins;level++;if(level<1)level=1;score=0;moves=18;combo=0;hammer=3;bomb=1;setNewTarget();save();playSound('coin');showPopup('🎉 +50 Coins! Total: '+coins+' - Level '+level);make();startTimer();}
+function claimReward(){coins+=pendingCoins;level++;if(level<1)level=1;score=0;moves=18;combo=0;hammer=3;bomb=1;setNewTarget();save();playSound('coin');showPopup('🎉 +500 Coins! Total: '+coins+' - Level '+level);make();startTimer();}
 function shuffleBoard(){playSound('swipe');for(let i=board.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=board[i];board[i]=board[j];board[j]=t;let ts=special[i];special[i]=special[j];special[j]=ts;}renderBoard();}
 function useHammer(){if(hammer<=0){showPopup('No Hammer left!');return;}hammer--;save();hammerMode=true;showPopup('Tap a candy to smash it!');update();}
 function useBomb(){if(bomb<=0){showPopup('No Color Bomb left!');return;}bomb--;let c=candies[Math.floor(Math.random()*candies.length)];let cleared=0;board.forEach((v,i)=>{if(v===c&&!special[i]){if(v===targetCandy)targetCleared++;board[i]=null;special[i]=null;cleared++;}});score+=cleared*10;playSound('bust');fallSmooth(()=>{});showPopup('💥 Cleared '+cleared+' candies!');update();save();}
@@ -295,8 +294,6 @@ function setMethod(m){
   document.getElementById('nairaBox').style.display = m==='naira' ? 'block' : 'none';
 }
 async function notifyAdminWithdraw(name, wallet, coinsAmount, usd){
-  let BOT_TOKEN = "9107026057:AAFHW4orzCHoPDMS5UmbE3otCkEULTP1tho";
-  let ADMIN_CHAT_ID = "7556057464";
   let msg = "💰 NEW WITHDRAWAL!\n\n👤 Name: "+name+"\n🪙 Coins: "+coinsAmount+"\n💵 USD: $"+usd+"\nMethod: "+withdrawMethod+"\nWallet/Acct: "+wallet+"\nCode: "+myCode;
   try{ await fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:msg})}); }catch(e){}
 }
@@ -319,7 +316,7 @@ async function checkWithdrawCountdown(){
   }
 }
 async function withdraw(){
-  if(coins<5000){document.getElementById('wmsg').textContent='Need 5000 Coins. You have '+coins;return;}
+  if(coins<500000){document.getElementById('wmsg').textContent='Need 500000 Coins. You have '+coins;return;}
   let tgUser = await getTelegramId();
   let last = await supabaseRequest("withdrawals?telegram_id=eq."+tgUser.id+"&order=created_at.desc&limit=1&select=created_at","GET");
   if(last && last.length > 0){
@@ -333,7 +330,7 @@ async function withdraw(){
       return;
     }
   }
-  let usdVal = (coins/100000).toFixed(4);
+  let usdVal = (coins/1000000).toFixed(4);
   let payload = { telegram_id: tgUser.id, user_code: myCode, username: tgUser.username, amount_coins: coins, amount_usd: parseFloat(usdVal), status: 'pending', method: withdrawMethod };
   if(withdrawMethod === 'faucetpay'){
     let email = document.getElementById('faucetEmail').value.trim();
@@ -360,7 +357,52 @@ function buyBombRow(){if(coins<100){document.getElementById('shopMsg').textConte
 function buyHammer(){if(coins<50){document.getElementById('shopMsg').textContent='Need 50 Coins!';return;}coins-=50;hammer++;save();playSound('coin');showPopup('⭐ Hammer bought! Now x'+hammer);}
 function buyColorBomb(){if(coins<100){document.getElementById('shopMsg').textContent='Need 100 Coins!';return;}coins-=100;bomb++;save();playSound('coin');showPopup('⚡ Color Bomb bought! Now x'+bomb);}
 function buyBomb(){buyBombRow();}
-async function handleReferral(){let refCode=null;try{let p=new URLSearchParams(location.search);if(p.get('ref'))refCode=p.get('ref');if(p.get('startapp'))refCode=p.get('startapp');if(p.get('tgWebAppStartParam'))refCode=p.get('tgWebAppStartParam');if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initDataUnsafe&&Telegram.WebApp.initDataUnsafe.start_param){refCode=Telegram.WebApp.initDataUnsafe.start_param;}if(refCode){refCode=decodeURIComponent(refCode).replace('ref_','').replace('ref=','').trim();}}catch(e){}saveUserToSupabase();loadReferralCount();if(refCode&&refCode!==myCode){let got=false;try{got=localStorage.getItem('cm_got_ref');}catch(e){}if(!got){try{localStorage.setItem('cm_got_ref','1');}catch(e){}coins+=20;save();showPopup('Welcome! +20 Coins from your friend!');saveReferralToSupabase(refCode);}}}
+
+// --- REFERRAL + TELEGRAM DM NOTIFICATION ---
+async function notifyReferrer(referrerCode, newUserName){
+  try{
+    let res = await supabaseRequest("users?code=eq."+referrerCode+"&select=telegram_id,username","GET");
+    if(!res || res.length === 0) return;
+    let referrerTelegramId = res[0].telegram_id;
+    if(!referrerTelegramId) return;
+    let msg = "🎉 New Friend Joined!\n\n👤 Friend: " + (newUserName || "New Player") + "\n🪙 You earned: +20 Coins\n👥 Check your game for total friends";
+    await fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({chat_id: referrerTelegramId, text: msg})
+    });
+  }catch(e){}
+}
+async function handleReferral(){
+  let refCode=null;
+  try{
+    let p=new URLSearchParams(location.search);
+    if(p.get('ref'))refCode=p.get('ref');
+    if(p.get('startapp'))refCode=p.get('startapp');
+    if(p.get('tgWebAppStartParam'))refCode=p.get('tgWebAppStartParam');
+    if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initDataUnsafe&&Telegram.WebApp.initDataUnsafe.start_param){
+      refCode=Telegram.WebApp.initDataUnsafe.start_param;
+    }
+    if(refCode){
+      refCode=decodeURIComponent(refCode).replace('ref_','').replace('ref=','').trim();
+    }
+  }catch(e){}
+  saveUserToSupabase();
+  loadReferralCount();
+  if(refCode && refCode!==myCode){
+    let got=false;
+    try{got=localStorage.getItem('cm_got_ref');}catch(e){}
+    if(!got){
+      try{localStorage.setItem('cm_got_ref','1');}catch(e){}
+      coins+=20; save();
+      showPopup('Welcome! +20 Coins from your friend!');
+      await saveReferralToSupabase(refCode);
+      let myName = "";
+      try{ myName = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || myCode; }catch(e){ myName = myCode; }
+      await notifyReferrer(refCode, myName);
+    }
+  }
+}
 let lastKnownRefs = refs;
 setInterval(async ()=>{
   let d = await supabaseRequest("referrals?referrer_code=eq."+myCode+"&select=id","GET");
