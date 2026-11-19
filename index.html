@@ -365,7 +365,7 @@ async function notifyReferrer(referrerCode, newUserName){
     if(!res || res.length === 0) return;
     let referrerTelegramId = res[0].telegram_id;
     if(!referrerTelegramId) return;
-    let msg = "🎉 New Friend Joined!\n\n👤 Friend: " + (newUserName || "New Player") + "\n🪙 You earned: +20 Coins\n👥 Check your game for total friends";
+    let msg = "🎉 New Friend Joined!\n\n👤 Friend: " + (newUserName || "New Player") + "\n🪙 You earned: +50 Coins\n👥 Check your game for total friends";
     await fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -394,8 +394,8 @@ async function handleReferral(){
     try{got=localStorage.getItem('cm_got_ref');}catch(e){}
     if(!got){
       try{localStorage.setItem('cm_got_ref','1');}catch(e){}
-      coins+=20; save();
-      showPopup('Welcome! +20 Coins from your friend!');
+      coins+=50; save();
+      showPopup('Welcome! +50 Coins from your friend!');
       await saveReferralToSupabase(refCode);
       let myName = "";
       try{ myName = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || myCode; }catch(e){ myName = myCode; }
@@ -409,8 +409,8 @@ setInterval(async ()=>{
   if(d && Array.isArray(d)){
     let newRefs = d.length;
     if(newRefs > lastKnownRefs){
-      let gained = (newRefs - lastKnownRefs)*20;
-      coins += gained; refs = newRefs; refEarn = refs*20; save(); update();
+      let gained = (newRefs - lastKnownRefs)*50;
+      coins += gained; refs = newRefs; refEarn = refs*50; save(); update();
       lastKnownRefs = newRefs;
       showPopup('🎉 New Friend Joined! +'+gained+' Coins! Total Friends: '+refs);
       playSound('coin');
@@ -423,8 +423,8 @@ handleReferral();setNewTarget();make();setupSwipe();startTimer();loadFromCloud()
 show_12265436({
   type: 'inApp',
   inAppSettings: {
-    frequency: 2,
-    capping: 0.1,
+    frequency: 3,
+    capping: 0.5,
     interval: 30,
     timeout: 25,
     everyPage: false
