@@ -4,45 +4,47 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<title>Candy Match - Crush Style</title>
+<title>Candy Match 4D</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:system-ui;background:#FFF8F0;color:#333;padding-bottom:20px;overflow-x:hidden}
-.top{background:#fff;margin:12px 14px;padding:14px;border-radius:20px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(255,77,141,.12)}
-.avatar{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#FFD6E0,#FFE8EE);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:30px;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+body{margin:0;font-family:system-ui;background:#0B0018;color:#fff;padding-bottom:20px;overflow-x:hidden;background-image:radial-gradient(circle at 20% 10%,#2A0A5E 0%,transparent 40%),radial-gradient(circle at 90% 20%,#FF2D8A 0%,transparent 30%),radial-gradient(circle at 50% 90%,#00E5FF 0%,transparent 30%)}
+.top{background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.15);margin:12px 14px;padding:14px;border-radius:22px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.avatar{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#FF2D8A,#FFD600);display:flex;align-items:center;justify-content:center;font-size:30px;border:3px solid #fff;box-shadow:0 0 20px #FF2D8A;overflow:hidden;flex-shrink:0}
 .avatar img{width:100%;height:100%;object-fit:cover}
-.p-name{font-weight:900;font-size:21px;color:#222;line-height:1}
-.p-coins{font-weight:800;font-size:16px;margin-top:4px;background:#FFF3CD;padding:4px 10px;border-radius:20px;display:inline-block}
+.p-name{font-weight:900;font-size:21px}
+.p-coins{font-weight:800;font-size:16px;margin-top:4px;background:linear-gradient(90deg,#FFD600,#FF8A00);color:#000;padding:5px 12px;border-radius:20px;display:inline-block;box-shadow:0 0 15px rgba(255,214,0,.6)}
 .btns-top{display:flex;gap:8px;margin:0 14px}
-.b{flex:1;border:0;padding:12px 6px;border-radius:22px;font-weight:800;font-size:13px;cursor:pointer}
-.b-play{background:linear-gradient(135deg,#FF4D8D,#FF7AAB);color:#fff;box-shadow:0 6px 16px rgba(255,77,141,.4)}
-.b-ref,.b-with{background:#fff;border:1.5px solid #FFE0EC;color:#333;box-shadow:0 3px 10px rgba(0,0,0,.05)}
-.card{background:linear-gradient(180deg,#FFF6E8,#FFFDF5);margin:14px;border-radius:22px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.07);text-align:center}
-.card h2{margin:0;font-size:22px;font-weight:900}
-.card p{margin:5px 0 8px;font-size:13px;color:#888}
-#msg{text-align:center;font-weight:800;color:#FF4D8D;min-height:22px;font-size:14px}
-#board{width:344px;max-width:92vw;margin:10px auto;background:linear-gradient(180deg,#FFE8B8,#FFF3D6);border-radius:18px;padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:5px;box-shadow:inset 0 2px 10px rgba(180,120,0,.15),0 10px 20px rgba(0,0,0,.08)}
-.cell{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;user-select:none;position:relative;transition:transform .15s;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12),inset 0 3px 6px rgba(255,255,255,.9),0 3px 6px rgba(0,0,0,.12)}
-.cell::after{content:'';position:absolute;top:4px;left:6px;width:55%;height:30%;background:rgba(255,255,255,.75);border-radius:20px;filter:blur(1px)}
-.cell:active{transform:scale(.92)}
-.cell.sel{outline:3px solid #FF4D8D;outline-offset:1px;transform:scale(.88);box-shadow:0 0 0 3px #FF4D8D,0 8px 18px rgba(255,77,141,.4)}
-.cell.pop{animation:pop .35s}
-@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
-.c-soda{background:radial-gradient(circle at 30% 30%,#7ED6FF,#0096D6)}
-.c-jelly{background:radial-gradient(circle at 30% 30%,#E08BFF,#8E00D6)}
-.c-sugar{background:radial-gradient(circle at 30% 30%,#FFE066,#FFB300)}
-.c-lolli{background:radial-gradient(circle at 30% 30%,#FF8A9A,#FF2D55)}
-.c-choco{background:radial-gradient(circle at 30% 30%,#C68B59,#6B3A1A)}
-.c-donut{background:radial-gradient(circle at 30% 30%,#FFB8D0,#FF6B9A)}
-.c-cherry{background:radial-gradient(circle at 30% 30%,#FF7A7A,#D60000)}
-.c-straw{background:radial-gradient(circle at 30% 30%,#FF9EBB,#FF2D6A)}
-.info{display:flex;justify-content:space-between;padding:10px 4px 0;font-size:13px;font-weight:800;color:#666}
-.info span:last-child{color:#FF8A00}
-.legend{text-align:center;font-size:11px;color:#999;margin-top:8px;line-height:1.7}
-.bottom{margin:14px;background:#fff;border-radius:18px;padding:12px;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.b{flex:1;border:0;padding:13px 6px;border-radius:24px;font-weight:900;font-size:13px;cursor:pointer}
+.b-play{background:linear-gradient(135deg,#FF2D8A,#FF6B00);color:#fff;box-shadow:0 8px 20px rgba(255,45,138,.5)}
+.b-ref{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.b-with{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);margin:14px;border-radius:26px;padding:14px;text-align:center;backdrop-filter:blur(10px);box-shadow:0 15px 35px rgba(0,0,0,.4)}
+.card h2{margin:0;font-size:22px;font-weight:900;text-shadow:0 0 15px #FF2D8A}
+.card p{margin:5px 0 8px;font-size:13px;opacity:.8}
+#msg{text-align:center;font-weight:800;color:#FFE066;min-height:22px;font-size:14px;text-shadow:0 0 10px #FFD600}
+#board{width:344px;max-width:92vw;margin:12px auto;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);border-radius:22px;padding:10px;display:grid;grid-template-columns:repeat(8,1fr);gap:6px;box-shadow:inset 0 0 25px rgba(255,45,138,.2),0 10px 30px rgba(0,0,0,.5);perspective:800px}
+.cell{aspect-ratio:1;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;user-select:none;position:relative;transition:.18s;transform-style:preserve-3d;box-shadow:0 8px 18px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,255,255,.6),inset 0 -6px 10px rgba(0,0,0,.25);animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateZ(0) translateY(0)}50%{transform:translateZ(12px) translateY(-2px)}}
+.cell::after{content:'';position:absolute;top:5px;left:7px;width:45%;height:28%;background:rgba(255,255,255,.85);border-radius:20px;filter:blur(2px);opacity:.9}
+.cell:active{transform:scale(.9) translateZ(20px)}
+.cell.sel{outline:3px solid #00E5FF;transform:scale(.9) translateZ(25px);box-shadow:0 0 25px #00E5FF}
+.cell.pop{animation:pop4d .4s}
+@keyframes pop4d{0%{transform:scale(1)}50%{transform:scale(1.35) translateZ(30px) rotate(10deg)}100%{transform:scale(1)}}
+.c-soda{background:radial-gradient(circle at 30% 25%,#A5F3FF,#00A8FF 60%,#004DFF);box-shadow:0 0 18px #00A8FF,0 8px 18px rgba(0,0,0,.5)}
+.c-jelly{background:radial-gradient(circle at 30% 25%,#FFB8FF,#B800FF 60%,#5E00FF);box-shadow:0 0 18px #B800FF,0 8px 18px rgba(0,0,0,.5)}
+.c-sugar{background:radial-gradient(circle at 30% 25%,#FFF9A0,#FFD600 60%,#FF8A00);box-shadow:0 0 18px #FFD600,0 8px 18px rgba(0,0,0,.5)}
+.c-lolli{background:radial-gradient(circle at 30% 25%,#FFC0D0,#FF2D55 60%,#B8002D);box-shadow:0 0 18px #FF2D55,0 8px 18px rgba(0,0,0,.5)}
+.c-choco{background:radial-gradient(circle at 30% 25%,#E8A87C,#8B4513 60%,#3E1A00);box-shadow:0 0 18px #8B4513,0 8px 18px rgba(0,0,0,.5)}
+.c-donut{background:radial-gradient(circle at 30% 25%,#FFD0E0,#FF6B9A 60%,#FF2D8A);box-shadow:0 0 18px #FF6B9A,0 8px 18px rgba(0,0,0,.5)}
+.c-cherry{background:radial-gradient(circle at 30% 25%,#FF9A9A,#FF0000 60%,#8B0000);box-shadow:0 0 18px #FF0000,0 8px 18px rgba(0,0,0,.5)}
+.c-straw{background:radial-gradient(circle at 30% 25%,#FFB8C8,#FF2D6A 60%,#B8003A);box-shadow:0 0 18px #FF2D6A,0 8px 18px rgba(0,0,0,.5)}
+.info{display:flex;justify-content:space-between;padding:10px 4px 0;font-size:13px;font-weight:800}
+.info span:last-child{color:#FFE066}
+.legend{text-align:center;font-size:11px;opacity:.7;margin-top:8px;line-height:1.7}
+.bottom{margin:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:12px}
 .bottom b{display:block;text-align:center;margin-bottom:6px}
-.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F5EFE6;font-size:14px}
-.daily{text-align:center;font-size:12px;color:#888;margin-top:10px}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:14px}
+.daily{text-align:center;font-size:12px;opacity:.7}
 </style>
 </head>
 <body>
@@ -56,8 +58,8 @@ body{margin:0;font-family:system-ui;background:#FFF8F0;color:#333;padding-bottom
   <button class="b b-with" onclick="withdraw()">💳 Withdraw</button>
 </div>
 <div class="card">
-  <h2>🍬 Candy Crush Board</h2>
-  <p>Swap 3+ matching candies! Moves: <span id="moves">12</span></p>
+  <h2>✨ Candy Match 4D ✨</h2>
+  <p>Swap 3+ floating candies! Moves: <span id="moves">12</span></p>
   <div id="msg">Finish 12 moves to get paid!</div>
   <div id="board"></div>
   <div class="info"><span>Score: <span id="score">0</span></span><span>Reward on Finish: <span id="reward">0</span> 🪙</span></div>
@@ -65,7 +67,6 @@ body{margin:0;font-family:system-ui;background:#FFF8F0;color:#333;padding-bottom
 </div>
 <div class="bottom"><b>🏆 Leaderboard</b><div id="list">Loading...</div></div>
 <div class="daily">🎁 Daily Bonus: Play 1 game to claim +50 🪙</div>
-
 <script>
 let tg=window.Telegram?.WebApp; if(tg){tg.expand();}
 let userId=tg?.initDataUnsafe?.user?.id?.toString()||localStorage.getItem('uid')||"guest_"+Math.floor(Math.random()*99999);
@@ -77,7 +78,6 @@ if(photo){document.getElementById('avatar').innerHTML=`<img src="${photo}">`;}
 document.getElementById('pname').innerText=username;
 let coins=parseInt(localStorage.getItem('coins')||1250);
 let score=0,moves=12,selected=null,gameOver=false,lock=false;
-// CANDY CRUSH CANDIES - Soda, Jelly, Sugar + more
 const CANDIES=[
  {e:'🥤',cls:'c-soda',name:'Soda'},
  {e:'🟣',cls:'c-jelly',name:'Jelly'},
@@ -89,71 +89,46 @@ const CANDIES=[
  {e:'🍓',cls:'c-straw',name:'Strawberry'},
 ];
 let board=[];const el=document.getElementById('board');
-function updateUI(){
-  document.getElementById('coins').innerText=coins.toLocaleString();
-  document.getElementById('score').innerText=score;
-  document.getElementById('moves').innerText=moves;
-  document.getElementById('reward').innerText=Math.floor(score/10);
-  localStorage.setItem('coins',coins);
-}
+function updateUI(){document.getElementById('coins').innerText=coins.toLocaleString();document.getElementById('score').innerText=score;document.getElementById('moves').innerText=moves;document.getElementById('reward').innerText=Math.floor(score/10);localStorage.setItem('coins',coins);}
 function randCandy(){return Math.floor(Math.random()*CANDIES.length);}
 function build(){
   board=[];el.innerHTML='';score=0;moves=12;gameOver=false;selected=null;lock=false;
   for(let i=0;i<64;i++){
     let c=randCandy();
-    // avoid starting with 3 in a row - stops bugging
     while((i%8>=2 && board[i-1]===c && board[i-2]===c) || (i>=16 && board[i-8]===c && board[i-16]===c)){c=randCandy();}
     board.push(c);
-    let d=document.createElement('div');d.className='cell '+CANDIES[c].cls;d.innerText=CANDIES[c].e;d.onclick=()=>clickCell(i);el.appendChild(d);
+    let d=document.createElement('div');d.className='cell '+CANDIES[c].cls;d.innerText=CANDIES[c].e;d.style.animationDelay=(i%8*0.15)+'s';d.onclick=()=>clickCell(i);el.appendChild(d);
   }
   updateUI();document.getElementById('msg').innerText='Finish 12 moves to get paid!';
 }
 function render(){[...el.children].forEach((d,i)=>{d.innerText=CANDIES[board[i]].e;d.className='cell '+CANDIES[board[i]].cls+(i===selected?' sel':'');});}
-function findMatches(){
-  let m=new Set();
-  for(let r=0;r<8;r++)for(let c=0;c<6;c++){let idx=r*8+c;if(board[idx]===board[idx+1]&&board[idx]===board[idx+2]){m.add(idx);m.add(idx+1);m.add(idx+2);}}
-  for(let c=0;c<8;c++)for(let r=0;r<6;r++){let idx=r*8+c;if(board[idx]===board[idx+8]&&board[idx]===board[idx+16]){m.add(idx);m.add(idx+8);m.add(idx+16);}}
-  return m;
-}
+function findMatches(){let m=new Set();for(let r=0;r<8;r++)for(let c=0;c<6;c++){let idx=r*8+c;if(board[idx]===board[idx+1]&&board[idx]===board[idx+2]){m.add(idx);m.add(idx+1);m.add(idx+2);}}for(let c=0;c<8;c++)for(let r=0;r<6;r++){let idx=r*8+c;if(board[idx]===board[idx+8]&&board[idx]===board[idx+16]){m.add(idx);m.add(idx+8);m.add(idx+16);}}return m;}
 function clickCell(i){
   if(gameOver||lock) return;
   if(selected===null){selected=i;render();return;}
-  let a=selected;selected=null;
-  let r1=Math.floor(a/8),c1=a%8,r2=Math.floor(i/8),c2=i%8;
+  let a=selected;selected=null;let r1=Math.floor(a/8),c1=a%8,r2=Math.floor(i/8),c2=i%8;
   if(Math.abs(r1-r2)+Math.abs(c1-c2)!==1){render();return;}
-  // swap
   [board[a],board[i]]=[board[i],board[a]];render();
   let matched=findMatches();
-  if(matched.size===0){
-    // NO MATCH - swap back, don't waste move - THIS FIXES BUGGING
-    setTimeout(()=>{[board[a],board[i]]=[board[i],board[a]];render();},250);
-    return;
-  }
+  if(matched.size===0){setTimeout(()=>{[board[a],board[i]]=[board[i],board[a]];render();},250);return;}
   moves--;updateUI();lock=true;setTimeout(()=>resolveMatches(),250);
 }
 function resolveMatches(){
   let matched=findMatches();
-  if(matched.size===0){
-    lock=false;render();
-    if(moves<=0) finishGame();
-    return;
-  }
+  if(matched.size===0){lock=false;render();if(moves<=0) finishGame();return;}
   score+=matched.size*10;
-  matched.forEach(idx=>{
-    let cellEl=el.children[idx]; if(cellEl) cellEl.classList.add('pop');
-    board[idx]=randCandy();
-  });
+  matched.forEach(idx=>{let ce=el.children[idx];if(ce)ce.classList.add('pop');board[idx]=randCandy();});
   updateUI();setTimeout(()=>{render();resolveMatches();},350);
 }
 function finishGame(){
-  if(gameOver) return; gameOver=true;
-  let reward=Math.floor(score/10); if(reward<20) reward=20;
-  coins+=reward; updateUI();
+  if(gameOver) return;gameOver=true;
+  let reward=Math.floor(score/10);if(reward<20)reward=20;
+  coins+=reward;updateUI();
   document.getElementById('msg').innerText=`🎉 Game Complete! +${reward} coins!`;
   fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,username:username,coins:coins,score:score,level:1,last_reward:reward})}).then(()=>loadLeaderboard()).catch(()=>loadLeaderboard());
-  setTimeout(()=>{alert(`🎉 Game Complete!\n\nScore: ${score}\nYou earned: +${reward} coins\nBalance: ${coins} coins\n\nTap Play to play again!`);},300);
+  setTimeout(()=>{alert(`🎉 Game Complete!\n\nScore: ${score}\nYou earned: +${reward} coins\nBalance: ${coins} coins`);},300);
 }
-function invite(){let link=`https://t.me/candymatchs_bot?start=${userId}`;if(tg)tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Play Candy Match with me!')}`);else alert('Your link: '+link);}
+function invite(){let link=`https://t.me/candymatchs_bot?start=${userId}`;if(tg)tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Play Candy Match 4D with me!')}`);else alert('Your link: '+link);}
 function withdraw(){
   if(coins<1000){alert('You need 1,000 coins to withdraw.\nYou have: '+coins);return;}
   let w=prompt('Enter wallet / account:\nYou have '+coins+' coins');if(!w)return;
