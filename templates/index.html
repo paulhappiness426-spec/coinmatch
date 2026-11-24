@@ -3,969 +3,438 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<title>Cyber Match • Play & Earn Crypto</title>
+<script src="https://telegram.org"></script>
+<title>Candy Match Arena • Play & Earn</title>
 <style>
   :root {
-    --bg-dark: #090b10;
-    --bg-panel: #111622;
-    --bg-card: rgba(20, 27, 42, 0.85);
-    --neon-cyan: #00f5d4;
-    --neon-pink: #ff2a85;
-    --neon-purple: #7b2cbf;
-    --neon-amber: #ffb703;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border-glow: rgba(0, 245, 212, 0.25);
+    --bg-app: #0b0e17;
+    --card-bg: #151b2b;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --board-bg: #1c2438;
+    --cell-bg: #111625;
+    --accent-pink: #ff2e93;
+    --accent-cyan: #00f5d4;
+    --accent-gold: #ffbe0b;
+    --text-main: #ffffff;
+    --text-sub: #94a3b8;
   }
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
 
   body {
     margin: 0;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: radial-gradient(circle at top, #161d30 0%, var(--bg-dark) 75%);
+    background: radial-gradient(circle at top, #19223c 0%, var(--bg-app) 80%);
     color: var(--text-main);
-    padding-bottom: 32px;
+    padding: 12px 12px 30px;
     min-height: 100vh;
   }
 
-  /* Header & Profile */
-  .header {
-    background: linear-gradient(180deg, #131a2c 0%, #0d111c 100%);
-    padding: 16px 14px 16px;
-    border-radius: 0 0 26px 26px;
-    border-bottom: 1px solid var(--border-glow);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+  /* Card Container */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 22px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
   }
 
-  .profile { display: flex; align-items: center; gap: 12px; }
+  /* Top Profile Section (Matching Screenshot) */
+  .profile-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
 
-  .avatar {
-    width: 52px; height: 52px; border-radius: 16px;
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; font-weight: 900; color: #090b10;
-    border: 2px solid var(--neon-cyan);
-    box-shadow: 0 0 15px rgba(0, 245, 212, 0.4);
+  .avatar-ring {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink));
+    box-shadow: 0 0 16px rgba(0, 245, 212, 0.35);
+    flex-shrink: 0;
+  }
+
+  .avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--accent-cyan);
     overflow: hidden;
   }
 
-  .p-name { font-weight: 900; font-size: 18px; letter-spacing: 0.3px; }
-  .p-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  .badge {
-    background: rgba(0, 245, 212, 0.15);
-    color: var(--neon-cyan);
-    border: 1px solid var(--neon-cyan);
-    font-size: 10px; font-weight: 800;
-    padding: 3px 9px; border-radius: 20px;
-    margin-top: 5px; display: inline-block;
-    letter-spacing: 0.6px;
+  .user-meta h2 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
   }
 
-  /* Stats Bar */
-  .coin-bar { display: flex; gap: 8px; margin-top: 14px; }
-
-  .coin-box {
-    flex: 1;
-    background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px; padding: 10px 6px; text-align: center;
+  .coin-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent-gold);
   }
 
-  .coin-box b { font-size: 18px; display: block; color: var(--text-main); }
-  .coin-box span { font-size: 10px; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 700; }
-
-  .coin-box.gold {
-    background: linear-gradient(135deg, rgba(0, 245, 212, 0.18), rgba(123, 44, 191, 0.25));
-    border: 1px solid var(--neon-cyan);
-    box-shadow: 0 0 18px rgba(0, 245, 212, 0.2);
-  }
-  .coin-box.gold b { color: var(--neon-cyan); }
-
-  /* Game Title & Progress */
-  .title {
-    text-align: center; margin: 16px 0 2px;
-    font-size: 26px; font-weight: 900; letter-spacing: 0.5px;
-    background: linear-gradient(90deg, #fff, var(--neon-cyan));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  .level-pill {
+    margin-left: auto;
+    background: rgba(0, 245, 212, 0.12);
+    border: 1px solid rgba(0, 245, 212, 0.4);
+    color: var(--accent-cyan);
+    padding: 5px 11px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 800;
   }
 
-  .subtitle { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-
-  .progress {
-    height: 8px; background: rgba(255, 255, 255, 0.08);
-    border-radius: 20px; margin: 10px 18px; overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+  /* 3 Action Pills (Play, Referral, Withdraw) */
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
   }
 
-  .progress i {
-    display: block; height: 100%;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
-    width: 0%; border-radius: 20px; transition: width 0.3s ease;
-    box-shadow: 0 0 10px var(--neon-cyan);
+  .pill-btn {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #1d253a;
+    color: #fff;
+    padding: 10px 6px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: transform 0.12s, box-shadow 0.15s;
   }
 
-  #msg {
-    text-align: center; font-weight: 800; min-height: 22px;
-    color: var(--neon-amber); font-size: 13.5px; letter-spacing: 0.3px;
+  .pill-btn:active {
+    transform: scale(0.95);
   }
 
-  /* Game Board */
+  .pill-btn.primary {
+    background: linear-gradient(135deg, #ff2e93, #d90467);
+    border: none;
+    box-shadow: 0 4px 15px rgba(255, 46, 147, 0.4);
+  }
+
+  /* Board Header & Level Challenge */
+  .board-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .board-header h3 {
+    margin: 0 0 4px;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+  }
+
+  .challenge-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #0e1320;
+    border: 1px solid rgba(0, 245, 212, 0.25);
+    border-radius: 14px;
+    padding: 8px 12px;
+    margin: 8px 0 6px;
+    font-size: 12.5px;
+  }
+
+  .challenge-goal {
+    font-weight: 700;
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .moves-badge {
+    background: rgba(255, 46, 147, 0.18);
+    border: 1px solid var(--accent-pink);
+    color: #ff70b5;
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 12px;
+  }
+
+  .progress-wrap {
+    height: 7px;
+    background: #0d111c;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+    transition: width 0.3s ease;
+  }
+
+  #statusMsg {
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--accent-gold);
+    min-height: 18px;
+    margin-bottom: 6px;
+  }
+
+  /* 8x8 Match-3 Grid */
   #board {
-    width: 344px; max-width: 94vw; margin: 10px auto;
-    background: #101522;
-    border: 1.5px solid rgba(0, 245, 212, 0.3);
-    border-radius: 22px; padding: 8px;
-    display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), inset 0 0 20px rgba(0, 245, 212, 0.05);
+    width: 100%;
+    max-width: 344px;
+    margin: 0 auto;
+    background: var(--board-bg);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.5);
   }
 
   .cell {
-    border-radius: 11px; display: flex; align-items: center; justify-content: center;
-    font-size: 22px; cursor: pointer;
-    background: #192136;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    user-select: none; aspect-ratio: 1; transition: transform 0.12s, background 0.15s;
-    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35);
+    aspect-ratio: 1;
+    background: var(--cell-bg);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+    box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.04);
+    padding: 4px;
   }
 
-  .cell:active { transform: scale(0.9); }
+  .cell svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.45));
+    transition: transform 0.15s;
+  }
+
+  .cell:active {
+    transform: scale(0.9);
+  }
 
   .cell.sel {
-    outline: 2px solid var(--neon-cyan);
-    transform: scale(0.88);
-    background: rgba(0, 245, 212, 0.2);
-    box-shadow: 0 0 14px rgba(0, 245, 212, 0.6);
+    background: rgba(0, 245, 212, 0.22);
+    outline: 2px solid var(--accent-cyan);
+    transform: scale(0.92);
+    box-shadow: 0 0 12px rgba(0, 245, 212, 0.5);
   }
 
-  /* Action Buttons */
-  .btns { display: flex; gap: 10px; padding: 0 14px; margin-top: 8px; }
-
-  .btn {
-    flex: 1;
-    background: linear-gradient(135deg, var(--neon-cyan), #00bbf9);
-    color: #06090f; border: 0; padding: 13px; border-radius: 16px;
-    font-weight: 900; font-size: 13.5px; cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0, 245, 212, 0.28);
-    transition: transform 0.1s;
+  /* Daily Bonus Footer Bar */
+  .bonus-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #161d31, #1e2640);
+    border: 1px solid rgba(255, 190, 11, 0.3);
+    border-radius: 16px;
+    padding: 11px 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
   }
 
-  .btn:active { transform: scale(0.96); }
-
-  .btn2 {
-    background: #1a2236; color: var(--text-main);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  .bonus-btn {
+    background: var(--accent-gold);
+    color: #0b0e17;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 12px;
+    cursor: pointer;
   }
 
-  .btn-pink {
-    background: linear-gradient(135deg, var(--neon-pink), #b5179e);
-    color: #fff;
-    box-shadow: 0 6px 18px rgba(255, 42, 133, 0.32);
+  .bonus-btn:disabled {
+    background: #2a344d;
+    color: var(--text-sub);
+    cursor: default;
   }
 
   /* Leaderboard */
-  #leader {
-    background: var(--bg-panel);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    margin: 16px 14px 0; border-radius: 20px; padding: 14px;
-  }
-
-  #leader-title {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 10px; font-weight: 900; font-size: 15px;
-    color: var(--neon-cyan);
+  .leader-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--accent-cyan);
   }
 
   .row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 9px 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     font-size: 13.5px;
   }
+
   .row:last-child { border-bottom: none; }
 
-  .player-info { display: flex; align-items: center; gap: 8px; }
-  .rank-badge {
-    width: 22px; height: 22px; border-radius: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 900;
+  .p-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .rank-1 { background: #ffb703; color: #000; }
-  .rank-2 { background: #cbd5e1; color: #000; }
-  .rank-3 { background: #d97706; color: #fff; }
 
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+  .rank-tag {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #232d45;
+    font-size: 11px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .online { background: #00f5d4; box-shadow: 0 0 8px #00f5d4; }
-  .offline { background: #64748b; }
+  .r-1 { background: #ffbe0b; color: #000; }
+  .r-2 { background: #cbd5e1; color: #000; }
+  .r-3 { background: #d97706; color: #fff; }
 
-  .player-score { font-weight: 800; color: var(--neon-amber); }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot.on { background: #00f5d4; box-shadow: 0 0 8px #00f5d4; }
+  .dot.off { background: #64748b; }
 
   /* Modals */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(6px);
-    z-index: 999; align-items: center; justify-content: center; padding: 16px;
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 15, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
   }
-  .modal-overlay.open { display: flex; }
 
-  .modal-card {
-    background: #131929; border: 1px solid var(--neon-cyan);
-    border-radius: 22px; width: 100%; max-width: 380px; padding: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+  .modal-backdrop.show { display: flex; }
+
+  .modal-box {
+    background: #151b2b;
+    border: 1px solid var(--accent-cyan);
+    border-radius: 22px;
+    padding: 20px;
+    width: 100%;
+    max-width: 370px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
   }
 
-  .modal-card h3 { margin: 0 0 6px; font-size: 20px; color: var(--neon-cyan); }
-  .modal-card p { margin: 0 0 14px; font-size: 13px; color: var(--text-muted); line-height: 1.45; }
-
-  .form-group { margin-bottom: 12px; }
-  .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #cbd5e1; }
-
-  .form-control {
-    width: 100%; padding: 11px 12px; border-radius: 12px;
-    background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff; font-size: 14px; outline: none;
+  .modal-box h3 {
+    margin: 0 0 8px;
+    color: var(--accent-cyan);
+    font-size: 19px;
   }
-  .form-control:focus { border-color: var(--neon-cyan); }
 
-  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-bottom: 5px;
+    font-weight: 700;
+  }
+
+  .input-box {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: #0b0e17;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+  }
+  .input-box:focus { border-color: var(--accent-cyan); }
+
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="profile">
-    <div class="avatar" id="avatar">⚡</div>
-    <div>
-      <div class="p-name" id="pname">Player</div>
-      <div class="p-sub">Cyber Arena • Play & Earn</div>
-      <span class="badge">⚡ PRO GAMER</span>
+  <!-- Top Profile Card -->
+  <div class="card">
+    <div class="profile-top">
+      <div class="avatar-ring">
+        <div class="avatar-inner" id="avatar">J</div>
+      </div>
+      <div class="user-meta">
+        <h2 id="pname">Player</h2>
+        <div class="coin-display">🪙 <span id="coins">1,250</span> coins</div>
+      </div>
+      <div class="level-pill" id="levelBadge">LVL 1</div>
+    </div>
+
+    <div class="action-row">
+      <button class="pill-btn primary" onclick="startLevel(currentLevel)">▶ Play</button>
+      <button class="pill-btn" onclick="inviteFriend()">🔗 Referral</button>
+      <button class="pill-btn" onclick="openWithdraw()">📥 Withdraw</button>
     </div>
   </div>
-  <div class="coin-bar">
-    <div class="coin-box gold"><b id="coins">🪙 100</b><span>COINS</span></div>
-    <div class="coin-box"><b id="level">⭐ 1</b><span>LEVEL</span></div>
-    <div class="coin-box"><b id="score">0</b><span>SCORE</span></div>
-  </div>
-</div>
 
-<div class="title">⚡ CYBER MATCH</div>
-<div class="subtitle">Swap adjacent gems • Match 3+ to mine coins</div>
-<div class="progress"><i id="prog"></i></div>
-<div id="msg">Match 3 gems to score!</div>
-
-<div id="board"></div>
-
-<div class="btns">
-  <button class="btn" onclick="newGame()">🔄 New Board</button>
-  <button class="btn btn2" onclick="invite()">👥 Refer +50 🪙</button>
-</div>
-<div class="btns">
-  <button class="btn btn-pink" onclick="openWithdrawModal()">💸 Withdraw Crypto</button>
-  <button class="btn btn2" onclick="openRulesModal()">📜 How to Earn</button>
-</div>
-
-<div id="leader">
-  <div id="leader-title">
-    <span>🏆 Top Arena Players</span>
-    <span style="font-size:11px;color:var(--text-muted)">Unique Ranking</span>
-  </div>
-  <div id="list">Loading players...</div>
-</div>
-
-<!-- Withdraw Modal -->
-<div class="modal-overlay" id="withdrawModal">
-  <div class="modal-card">
-    <h3>💸 Crypto Cashout</h3>
-    <p>Available Balance: <b id="modalCoins" style="color:var(--neon-cyan)">100</b> 🪙 (Min: 1,000 🪙)</p>
-
-    <div class="form-group">
-      <label>Payout Method</label>
-      <select class="form-control" id="payoutMethod" onchange="updateWalletPlaceholder()">
-        <option value="FaucetPay">⚡ FaucetPay (Instant Micro-Wallet)</option>
-        <option value="USDT_TRC20">💵 USDT (TRC20 Network)</option>
-        <option value="USDT_BEP20">💵 USDT (BEP20 / BSC)</option>
-        <option value="TRX">🔴 TRON (TRX)</option>
-        <option value="LTC">⚪ Litecoin (LTC)</option>
-        <option value="DOGE">🟡 Dogecoin (DOGE)</option>
-        
-Here is your complete, error-free code featuring a high-contrast Cyberpunk/Esports neon theme, a deduplicated leaderboard system with live online status indicators, and a dedicated multi-crypto withdrawal modal supporting FaucetPay and direct wallets.
-
-Key Fixes & Upgrades Applied
-
-• Syntax & Truncation Fixed: Completed the cut-off withdraw() function, added the missing showRules() modal, and wrapped all fetch('/api/save') calls in safe try/catch blocks so the game works smoothly even offline or while testing locally.
-• Pro-Gamer Aesthetic: Replaced the purple/yellow candy palette with a Cyberpunk Obsidian & Electric Cyan/Magenta theme, complete with neon glow borders, glassmorphism cards, tactile cell animations, and Telegram Haptic Feedback on swaps and matches.
-• Unique Player Leaderboard: Added persistent localStorage ID tracking (guest_ IDs no longer regenerate on every refresh) and deduplication logic (Map keyed by user_id) so each player appears strictly once, updating their highest score and showing a pulsing green ONLINE or gray OFFLINE status dot.
-• Multi-Crypto & FaucetPay Withdrawal: Replaced the basic browser prompt() with an interactive modal supporting FaucetPay (Email/Username) as well as USDT (TRC20/BEP20), TRX, LTC, DOGE, and TON, automatically deducting the withdrawn coins from the user's balance upon submission.
-
-Complete Refactored Code (index.html)
-
-html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<title>Cyber Match • Play & Earn Crypto</title>
-<style>
-  :root {
-    --bg-dark: #090b10;
-    --bg-panel: #111622;
-    --bg-card: rgba(20, 27, 42, 0.85);
-    --neon-cyan: #00f5d4;
-    --neon-pink: #ff2a85;
-    --neon-purple: #7b2cbf;
-    --neon-amber: #ffb703;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border-glow: rgba(0, 245, 212, 0.25);
-  }
-
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: radial-gradient(circle at top, #161d30 0%, var(--bg-dark) 75%);
-    color: var(--text-main);
-    padding-bottom: 32px;
-    min-height: 100vh;
-  }
-
-  /* Header & Profile */
-  .header {
-    background: linear-gradient(180deg, #131a2c 0%, #0d111c 100%);
-    padding: 16px 14px 16px;
-    border-radius: 0 0 26px 26px;
-    border-bottom: 1px solid var(--border-glow);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
-  }
-
-  .profile { display: flex; align-items: center; gap: 12px; }
-
-  .avatar {
-    width: 52px; height: 52px; border-radius: 16px;
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; font-weight: 900; color: #090b10;
-    border: 2px solid var(--neon-cyan);
-    box-shadow: 0 0 15px rgba(0, 245, 212, 0.4);
-    overflow: hidden;
-  }
-
-  .p-name { font-weight: 900; font-size: 18px; letter-spacing: 0.3px; }
-  .p-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  .badge {
-    background: rgba(0, 245, 212, 0.15);
-    color: var(--neon-cyan);
-    border: 1px solid var(--neon-cyan);
-    font-size: 10px; font-weight: 800;
-    padding: 3px 9px; border-radius: 20px;
-    margin-top: 5px; display: inline-block;
-    letter-spacing: 0.6px;
-  }
-
-  /* Stats Bar */
-  .coin-bar { display: flex; gap: 8px; margin-top: 14px; }
-
-  .coin-box {
-    flex: 1;
-    background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px; padding: 10px 6px; text-align: center;
-  }
-
-  .coin-box b { font-size: 18px; display: block; color: var(--text-main); }
-  .coin-box span { font-size: 10px; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 700; }
-
-  .coin-box.gold {
-    background: linear-gradient(135deg, rgba(0, 245, 212, 0.18), rgba(123, 44, 191, 0.25));
-    border: 1px solid var(--neon-cyan);
-    box-shadow: 0 0 18px rgba(0, 245, 212, 0.2);
-  }
-  .coin-box.gold b { color: var(--neon-cyan); }
-
-  /* Game Title & Progress */
-  .title {
-    text-align: center; margin: 16px 0 2px;
-    font-size: 26px; font-weight: 900; letter-spacing: 0.5px;
-    background: linear-gradient(90deg, #fff, var(--neon-cyan));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-
-  .subtitle { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-
-  .progress {
-    height: 8px; background: rgba(255, 255, 255, 0.08);
-    border-radius: 20px; margin: 10px 18px; overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .progress i {
-    display: block; height: 100%;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
-    width: 0%; border-radius: 20px; transition: width 0.3s ease;
-    box-shadow: 0 0 10px var(--neon-cyan);
-  }
-
-  #msg {
-    text-align: center; font-weight: 800; min-height: 22px;
-    color: var(--neon-amber); font-size: 13.5px; letter-spacing: 0.3px;
-  }
-
-  /* Game Board */
-  #board {
-    width: 344px; max-width: 94vw; margin: 10px auto;
-    background: #101522;
-    border: 1.5px solid rgba(0, 245, 212, 0.3);
-    border-radius: 22px; padding: 8px;
-    display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), inset 0 0 20px rgba(0, 245, 212, 0.05);
-  }
-
-  .cell {
-    border-radius: 11px; display: flex; align-items: center; justify-content: center;
-    font-size: 22px; cursor: pointer;
-    background: #192136;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    user-select: none; aspect-ratio: 1; transition: transform 0.12s, background 0.15s;
-    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35);
-  }
-
-  .cell:active { transform: scale(0.9); }
-
-  .cell.sel {
-    outline: 2px solid var(--neon-cyan);
-    transform: scale(0.88);
-    background: rgba(0, 245, 212, 0.2);
-    box-shadow: 0 0 14px rgba(0, 245, 212, 0.6);
-  }
-
-  /* Action Buttons */
-  .btns { display: flex; gap: 10px; padding: 0 14px; margin-top: 8px; }
-
-  .btn {
-    flex: 1;
-    background: linear-gradient(135deg, var(--neon-cyan), #00bbf9);
-    color: #06090f; border: 0; padding: 13px; border-radius: 16px;
-    font-weight: 900; font-size: 13.5px; cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0, 245, 212, 0.28);
-    transition: transform 0.1s;
-  }
-
-  .btn:active { transform: scale(0.96); }
-
-  .btn2 {
-    background: #1a2236; color: var(--text-main);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  }
-
-  .btn-pink {
-    background: linear-gradient(135deg, var(--neon-pink), #b5179e);
-    color: #fff;
-    box-shadow: 0 6px 18px rgba(255, 42, 133, 0.32);
-  }
-
-  /* Leaderboard */
-  #leader {
-    background: var(--bg-panel);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    margin: 16px 14px 0; border-radius: 20px; padding: 14px;
-  }
-
-  #leader-title {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 10px; font-weight: 900; font-size: 15px;
-    color: var(--neon-cyan);
-  }
-
-  .row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 9px 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 13.5px;
-  }
-  .row:last-child { border-bottom: none; }
-
-  .player-info { display: flex; align-items: center; gap: 8px; }
-  .rank-badge {
-    width: 22px; height: 22px; border-radius: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 900;
-  }
-  .rank-1 { background: #ffb703; color: #000; }
-  .rank-2 { background: #cbd5e1; color: #000; }
-  .rank-3 { background: #d97706; color: #fff; }
-
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
-  }
-  .online { background: #00f5d4; box-shadow: 0 0 8px #00f5d4; }
-  .offline { background: #64748b; }
-
-  .player-score { font-weight: 800; color: var(--neon-amber); }
-
-  /* Modals */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(6px);
-    z-index: 999; align-items: center; justify-content: center; padding: 16px;
-  }
-  .modal-overlay.open { display: flex; }
-
-  .modal-card {
-    background: #131929; border: 1px solid var(--neon-cyan);
-    border-radius: 22px; width: 100%; max-width: 380px; padding: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
-  }
-
-  .modal-card h3 { margin: 0 0 6px; font-size: 20px; color: var(--neon-cyan); }
-  .modal-card p { margin: 0 0 14px; font-size: 13px; color: var(--text-muted); line-height: 1.45; }
-
-  .form-group { margin-bottom: 12px; }
-  .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #cbd5e1; }
-
-  .form-control {
-    width: 100%; padding: 11px 12px; border-radius: 12px;
-    background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff; font-size: 14px; outline: none;
-  }
-  .form-control:focus { border-color: var(--neon-cyan); }
-
-  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div class="profile">
-    <div class="avatar" id="avatar">⚡</div>
-    <div>
-      <div class="p-name" id="pname">Player</div>
-      <div class="p-sub">Cyber Arena • Play & Earn</div>
-      <span class="badge">⚡ PRO GAMER</span>
+  <!-- Match-3 Board Card -->
+  <div class="card">
+    <div class="board-header">
+      <h3>Match-3 Board</h3>
+      <div class="challenge-bar">
+        <div class="challenge-goal" id="challengeText">🎯 Goal: 300 pts</div>
+        <div class="moves-badge">Moves: <span id="movesLeft">15</span></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="progBar"></div></div>
+      <div id="statusMsg">Swap 3+ matching candies to score!</div>
     </div>
+
+    <div id="board"></div>
   </div>
-  <div class="coin-bar">
-    <div class="coin-box gold"><b id="coins">🪙 100</b><span>COINS</span></div>
-    <div class="coin-box"><b id="level">⭐ 1</b><span>LEVEL</span></div>
-    <div class="coin-box"><b id="score">0</b><span>SCORE</span></div>
+
+  <!-- Daily Bonus Bar -->
+  <div class="bonus-bar">
+    <div>🎁 <span id="bonusText">Daily Bonus Ready!</span></div>
+    <button class="bonus-btn" id="bonusBtn" onclick="claimDailyBonus()">Claim +100 🪙</button>
   </div>
-</div>
 
-<div class="title">⚡ CYBER MATCH</div>
-<div class="subtitle">Swap adjacent gems • Match 3+ to mine coins</div>
-<div class="progress"><i id="prog"></i></div>
-<div id="msg">Match 3 gems to score!</div>
-
-<div id="board"></div>
-
-<div class="btns">
-  <button class="btn" onclick="newGame()">🔄 New Board</button>
-  <button class="btn btn2" onclick="invite()">👥 Refer +50 🪙</button>
-</div>
-<div class="btns">
-  <button class="btn btn-pink" onclick="openWithdrawModal()">💸 Withdraw Crypto</button>
-  <button class="btn btn2" onclick="openRulesModal()">📜 How to Earn</button>
-</div>
-
-<div id="leader">
-  <div id="leader-title">
-    <span>🏆 Top Arena Players</span>
-    <span style="font-size:11px;color:var(--text-muted)">Unique Ranking</span>
-  </div>
-  <div id="list">Loading players...</div>
-</div>
-
-<!-- Withdraw Modal -->
-<div class="modal-overlay" id="withdrawModal">
-  <div class="modal-card">
-    <h3>💸 Crypto Cashout</h3>
-    <p>Available Balance: <b id="modalCoins" style="color:var(--neon-cyan)">100</b> 🪙 (Min: 1,000 🪙)</p>
-
-    <div class="form-group">
-      <label>Payout Method</label>
-      <select class="form-control" id="payoutMethod" onchange="updateWalletPlaceholder()">
-        <option value="FaucetPay">⚡ FaucetPay (Instant Micro-Wallet)</option>
-        <option value="USDT_TRC20">💵 USDT (TRC20 Network)</option>
-        <option value="USDT_BEP20">💵 USDT (BEP20 / BSC)</option>
-        <option value="TRX">🔴 TRON (TRX)</option>
-        <option value="LTC">⚪ Litecoin (LTC)</option>
-        <option value="DOGE">🟡 Dogecoin (DOGE)</option>
-Use code with caution.
-💎 Toncoin (TON)
-
-FaucetPay Email or Username
-Coins to Withdraw (Min 1,000)
-Cancel
-Confirm Payout
-
-
-📜 How to Play & Earn
-1. Match 3+ Gems: Tap two adjacent tiles to swap them. Every matched gem gives +10 Score and +5 Coins.
-
-2. Level Up: Every 200 points increases your Arena Level.
-
-3. Refer Friends: Share your invite link to earn +50 Coins per active friend.
-
-4. Crypto Payouts: Reach 1,000 Coins to cash out via FaucetPay or direct crypto wallets (USDT, TRX, LTC, DOGE, TON).
-Got It, Let's Play!
-
-
-const tg = window.Telegram?.WebApp;
-if (tg) {
-tg.expand();
-tg.setHeaderColor('#131a2c');
-tg.setBackgroundColor('#090b10');
-}
-// Persistent unique User ID (prevents duplicate guest entries on reload)
-let savedGuestId = localStorage.getItem('cyber_match_uid');
-if (!savedGuestId) {
-savedGuestId = 'guest_' + Math.floor(100000 + Math.random() * 900000);
-localStorage.setItem('cyber_match_uid', savedGuestId);
-}
-const userId = tg?.initDataUnsafe?.user?.id?.toString() || savedGuestId;
-const username = tg?.initDataUnsafe?.user?.first_name || 'Gamer_' + userId.slice(-4);
-const photo = tg?.initDataUnsafe?.user?.photo_url;
-if (photo) {
-document.getElementById('avatar').innerHTML = <img src="${photo}" style="width:100%;height:100%;object-fit:cover" alt="avatar">;
-} else {
-document.getElementById('avatar').innerText = username[0].toUpperCase();
-}
-document.getElementById('pname').innerText = username;
-// Game State
-let coins = parseInt(localStorage.getItem('cm_coins')) || 100;
-let score = parseInt(localStorage.getItem('cm_score')) || 0;
-let level = parseInt(localStorage.getItem('cm_level')) || 1;
-let selected = null;
-let isProcessing = false;
-const gems = ['💎', '⚡', '🔥', '🔮', '🍀', '🚀', '👑', '💠'];
-let board = [];
-const el = document.getElementById('board');
-function haptic(type = 'light') {
-try {
-if (tg?.HapticFeedback) {
-if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
-else if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
-else tg.HapticFeedback.impactOccurred(type);
-}
-} catch (e) {}
-}
-// Safe backend sync + local persistence
-async function save(extraData = {}) {
-localStorage.setItem('cm_coins', coins);
-localStorage.setItem('cm_score', score);
-localStorage.setItem('cm_level', level);
-updateLeaderboardLocal(true);
-try {
-await fetch('/api/save', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-user_id: userId,
-username: username,
-coins,
-score,
-level,
-online: true,
-...extraData
-})
-});
-} catch (err) {
-// Silently fallback to local state if offline or previewing without backend
-}
-}
-function updateUI() {
-document.getElementById('coins').innerText = '🪙 ' + coins.toLocaleString();
-document.getElementById('score').innerText = score.toLocaleString();
-document.getElementById('level').innerText = '⭐ ' + level;
-document.getElementById('prog').style.width = Math.min(100, (score % 200) / 2) + '%';
-}
-// Build board without instant starting matches
-function build() {
-board = [];
-el.innerHTML = '';
-for (let i = 0; i < 64; i++) {
-let c;
-do {
-c = gems[Math.floor(Math.random() * gems.length)];
-} while (
-(i % 8 >= 2 && board[i - 1] === c && board[i - 2] === c) ||
-(i >= 16 && board[i - 8] === c && board[i - 16] === c)
-);
-board.push(c);
-const d = document.createElement('div');
-d.className = 'cell';
-d.innerText = c;
-d.onclick = () => clickCell(i);
-el.appendChild(d);
-}
-}
-function render() {
-[...el.children].forEach((d, i) => {
-d.innerText = board[i];
-d.classList.toggle('sel', i === selected);
-});
-}
-function clickCell(i) {
-if (isProcessing) return;
-if (selected === null) {
-selected = i;
-haptic('light');
-render();
-return;
-}
-if (selected === i) {
-selected = null;
-render();
-return;
-}
-const a = selected;
-selected = null;
-const r1 = Math.floor(a / 8), c1 = a % 8;
-const r2 = Math.floor(i / 8), c2 = i % 8;
-if (Math.abs(r1 - r2) + Math.abs(c1 - c2) !== 1) {
-haptic('error');
-render();
-return;
-}
-// Swap
-[board[a], board[i]] = [board[i], board[a]];
-render();
-isProcessing = true;
-setTimeout(() => {
-const hasMatch = checkMatches();
-if (!hasMatch) {
-// Revert invalid move
-[board[a], board[i]] = [board[i], board[a]];
-haptic('error');
-render();
-isProcessing = false;
-}
-}, 180);
-}
-function checkMatches() {
-const matched = new Set();
-// Horizontal check
-for (let r = 0; r < 8; r++) {
-for (let c = 0; c < 6; c++) {
-const idx = r * 8 + c;
-if (board[idx] === board[idx + 1] && board[idx] === board[idx + 2]) {
-matched.add(idx);
-matched.add(idx + 1);
-matched.add(idx + 2);
-}
-}
-}
-// Vertical check
-for (let c = 0; c < 8; c++) {
-for (let r = 0; r < 6; r++) {
-const idx = r * 8 + c;
-if (board[idx] === board[idx + 8] && board[idx] === board[idx + 16]) {
-matched.add(idx);
-matched.add(idx + 8);
-matched.add(idx + 16);
-}
-}
-}
-if (matched.size === 0) {
-isProcessing = false;
-return false;
-}
-const gained = matched.size * 10;
-const earnedCoins = Math.floor(gained / 2);
-const oldLevel = level;
-score += gained;
-coins += earnedCoins;
-level = Math.floor(score / 200) + 1;
-haptic('success');
-if (level > oldLevel) {
-document.getElementById('msg').innerText = 🔥 LEVEL UP! Welcome to Level ${level}!;
-} else {
-document.getElementById('msg').innerText = ⚡ COMBO! +${gained} pts | +${earnedCoins} 🪙;
-}
-matched.forEach(idx => {
-board[idx] = gems[Math.floor(Math.random() * gems.length)];
-});
-updateUI();
-save();
-render();
-setTimeout(() => checkMatches(), 280);
-return true;
-}
-function newGame() {
-selected = null;
-isProcessing = false;
-document.getElementById('msg').innerText = 'Fresh board ready! Good luck!';
-haptic('medium');
-build();
-updateUI();
-}
-function invite() {
-const link = https://t.me/candymatchs_bot?start=${userId};
-const text = '⚡ Join me in Cyber Match! Play & earn real crypto rewards!';
-if (tg) {
-tg.openTelegramLink(https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)});
-} else {
-navigator.clipboard?.writeText(link);
-alert('Invite link copied to clipboard:\n' + link);
-}
-}
-// Deduplicated Leaderboard Logic (Marks each player ONLY ONCE)
-function getUniqueLeaderboard(playersArray) {
-const uniqueMap = new Map();
-playersArray.forEach(p => {
-const id = String(p.user_id);
-if (!uniqueMap.has(id)) {
-uniqueMap.set(id, { ...p, user_id: id });
-} else {
-const existing = uniqueMap.get(id);
-// Keep highest score/coins and latest online status without duplicating row
-existing.score = Math.max(existing.score || 0, p.score || 0);
-existing.coins = Math.max(existing.coins || 0, p.coins || 0);
-existing.username = p.username || existing.username;
-existing.online = Boolean(p.online);
-}
-});
-return Array.from(uniqueMap.values()).sort((a, b) => b.score - a.score);
-}
-function updateLeaderboardLocal(isOnline = true) {
-let stored = [];
-try {
-stored = JSON.parse(localStorage.getItem('cm_leaderboard')) || [
-{ user_id: '1001', username: 'CryptoKing', score: 2450, online: true },
-{ user_id: '1002', username: 'NeonViper', score: 1820, online: false },
-{ user_id: '1003', username: 'BlockNinja', score: 1340, online: true }
-];
-} catch (e) { stored = []; }
-stored.push({
-user_id: userId,
-username: username,
-score: score,
-coins: coins,
-online: isOnline
-});
-const deduped = getUniqueLeaderboard(stored);
-localStorage.setItem('cm_leaderboard', JSON.stringify(deduped));
-renderLeaderboard(deduped);
-}
-async function loadLeaderboard() {
-try {
-const res = await fetch('/api/leaderboard');
-if (res.ok) {
-const data = await res.json();
-const deduped = getUniqueLeaderboard(data.players || data);
-renderLeaderboard(deduped);
-return;
-}
-} catch (e) {}
-updateLeaderboardLocal(true);
-}
-function renderLeaderboard(players) {
-const listEl = document.getElementById('list');
-if (!players || players.length === 0) {
-listEl.innerHTML = 'No players yet. Be #1!';
-return;
-}
-listEl.innerHTML = players.slice(0, 10).map((p, index) => {
-const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
-const isMe = String(p.user_id) === String(userId);
-const statusClass = p.online ? 'online' : 'offline';
-const statusTitle = p.online ? 'Online' : 'Offline';
-return <div class="row"> <div class="player-info"> <span class="rank-badge ${rankClass}">${index + 1}</span> <span class="status-dot ${statusClass}" title="${statusTitle}"></span> <span style="font-weight:${isMe ? '900' : '600'};color:${isMe ? 'var(--neon-cyan)' : '#fff'}"> ${p.username} ${isMe ? '(You)' : ''} </span> </div> <span class="player-score">${(p.score || 0).toLocaleString()} pts</span> </div>;
-}).join('');
-}
-// Mark user offline when leaving/closing the Mini App
-window.addEventListener('beforeunload', () => {
-updateLeaderboardLocal(false);
-if (navigator.sendBeacon) {
-navigator.sendBeacon('/api/save', JSON.stringify({
-user_id: userId,
-username,
-coins,
-score,
-level,
-online: false
-}));
-}
-});
-// Withdrawal & Rules Modals
-function openWithdrawModal() {
-document.getElementById('modalCoins').innerText = coins.toLocaleString();
-document.getElementById('withdrawAmount').value = Math.max(1000, coins);
-document.getElementById('withdrawModal').classList.add('open');
-haptic('light');
-}
-function openRulesModal() {
-document.getElementById('rulesModal').classList.add('open');
-haptic('light');
-}
-function closeModal(id) {
-document.getElementById(id).classList.remove('open');
-}
-function updateWalletPlaceholder() {
-const method = document.getElementById('payoutMethod').value;
-const label = document.getElementById('walletLabel');
-const input = document.getElementById('walletInput');
-if (method === 'FaucetPay') {
-label.innerText = 'FaucetPay Email or Username';
-input.placeholder = 'e.g. gamer@email.com';
-} else {
-label.innerText = Your ${method.replace('_', ' ')} Wallet Address;
-input.placeholder = 'Paste your crypto wallet address...';
-}
-}
-function submitWithdraw() {
-const method = document.getElementById('payoutMethod').value;
-const wallet = document.getElementById('walletInput').value.trim();
-const amount = parseInt(document.getElementById('withdrawAmount').value, 10);
-if (coins < 1000) {
-alert(❌ Insufficient balance!\n\nYou need at least 1,000 coins to withdraw.\nCurrent balance: ${coins} 🪙);
-return;
-}
-if (isNaN(amount) || amount < 1000 || amount > coins) {
-alert(❌ Invalid amount!\n\nEnter between 1,000 and ${coins} coins.);
-return;
-}
-if (!wallet || wallet.length < 4) {
-alert('❌ Please enter a valid FaucetPay email/username or crypto wallet address.');
-return;
-}
-coins -= amount;
-updateUI();
-save({
-withdraw: {
-method: method,
-wallet: wallet,
-amount: amount,
-timestamp: new Date().toISOString()
-}
-});
-closeModal('withdrawModal');
-haptic('success');
-alert(
-✅ Withdrawal Request Submitted!\n\n +
-• Method: ${method.replace('_', ' ')}\n +
-• Amount: ${amount.toLocaleString()} 🪙\n +
-• Destination: ${wallet}\n\n +
-Payouts are processed within 24 hours.
-);
-}
-// Initialize Game
-build();
-updateUI();
-loadLeaderboard();
-
-
-
-### Important Backend Note (`/api/save` & `/api/leaderboard`)
-To make sure your server database also prevents duplicate players on the backend:
-1. Ensure your database uses `user_id` as a **UNIQUE / PRIMARY KEY**.
-2. Use an **UPSERT** query (`INSERT ... ON CONFLICT(user_id) DO UPDATE` in SQLite/PostgreSQL, or `findOneAndUpdate({ user_id }, { $set: ... }, { upsert: true })` in MongoDB) instead of inserting a new record on each login.
+  <!-- Unique Leaderboard -->
+  <div class="card">
+    <div class="leader-head">
+      <span>🏆 Top Arena Players</span>
+  
