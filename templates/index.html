@@ -1,440 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<script src="https://telegram.org"></script>
-<title>Candy Match Arena • Play & Earn</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>Candy Match</title>
 <style>
-  :root {
-    --bg-app: #0b0e17;
-    --card-bg: #151b2b;
-    --card-border: rgba(255, 255, 255, 0.08);
-    --board-bg: #1c2438;
-    --cell-bg: #111625;
-    --accent-pink: #ff2e93;
-    --accent-cyan: #00f5d4;
-    --accent-gold: #ffbe0b;
-    --text-main: #ffffff;
-    --text-sub: #94a3b8;
-  }
-
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
-
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: radial-gradient(circle at top, #19223c 0%, var(--bg-app) 80%);
-    color: var(--text-main);
-    padding: 12px 12px 30px;
-    min-height: 100vh;
-  }
-
-  /* Card Container */
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 22px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-  }
-
-  /* Top Profile Section (Matching Screenshot) */
-  .profile-top {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-
-  .avatar-ring {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink));
-    box-shadow: 0 0 16px rgba(0, 245, 212, 0.35);
-    flex-shrink: 0;
-  }
-
-  .avatar-inner {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: #1e293b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    font-weight: 900;
-    color: var(--accent-cyan);
-    overflow: hidden;
-  }
-
-  .user-meta h2 {
-    margin: 0 0 4px;
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 0.2px;
-  }
-
-  .coin-display {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--accent-gold);
-  }
-
-  .level-pill {
-    margin-left: auto;
-    background: rgba(0, 245, 212, 0.12);
-    border: 1px solid rgba(0, 245, 212, 0.4);
-    color: var(--accent-cyan);
-    padding: 5px 11px;
-    border-radius: 14px;
-    font-size: 12px;
-    font-weight: 800;
-  }
-
-  /* 3 Action Pills (Play, Referral, Withdraw) */
-  .action-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-  }
-
-  .pill-btn {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: #1d253a;
-    color: #fff;
-    padding: 10px 6px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    transition: transform 0.12s, box-shadow 0.15s;
-  }
-
-  .pill-btn:active {
-    transform: scale(0.95);
-  }
-
-  .pill-btn.primary {
-    background: linear-gradient(135deg, #ff2e93, #d90467);
-    border: none;
-    box-shadow: 0 4px 15px rgba(255, 46, 147, 0.4);
-  }
-
-  /* Board Header & Level Challenge */
-  .board-header {
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
-  .board-header h3 {
-    margin: 0 0 4px;
-    font-size: 19px;
-    font-weight: 900;
-    letter-spacing: 0.3px;
-  }
-
-  .challenge-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #0e1320;
-    border: 1px solid rgba(0, 245, 212, 0.25);
-    border-radius: 14px;
-    padding: 8px 12px;
-    margin: 8px 0 6px;
-    font-size: 12.5px;
-  }
-
-  .challenge-goal {
-    font-weight: 700;
-    color: var(--accent-cyan);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .moves-badge {
-    background: rgba(255, 46, 147, 0.18);
-    border: 1px solid var(--accent-pink);
-    color: #ff70b5;
-    padding: 3px 9px;
-    border-radius: 10px;
-    font-weight: 900;
-    font-size: 12px;
-  }
-
-  .progress-wrap {
-    height: 7px;
-    background: #0d111c;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
-
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
-    transition: width 0.3s ease;
-  }
-
-  #statusMsg {
-    text-align: center;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--accent-gold);
-    min-height: 18px;
-    margin-bottom: 6px;
-  }
-
-  /* 8x8 Match-3 Grid */
-  #board {
-    width: 100%;
-    max-width: 344px;
-    margin: 0 auto;
-    background: var(--board-bg);
-    border: 2px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    padding: 6px;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 4px;
-    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.5);
-  }
-
-  .cell {
-    aspect-ratio: 1;
-    background: var(--cell-bg);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.12s, background 0.15s;
-    box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.04);
-    padding: 4px;
-  }
-
-  .cell svg {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.45));
-    transition: transform 0.15s;
-  }
-
-  .cell:active {
-    transform: scale(0.9);
-  }
-
-  .cell.sel {
-    background: rgba(0, 245, 212, 0.22);
-    outline: 2px solid var(--accent-cyan);
-    transform: scale(0.92);
-    box-shadow: 0 0 12px rgba(0, 245, 212, 0.5);
-  }
-
-  /* Daily Bonus Footer Bar */
-  .bonus-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(90deg, #161d31, #1e2640);
-    border: 1px solid rgba(255, 190, 11, 0.3);
-    border-radius: 16px;
-    padding: 11px 14px;
-    margin-bottom: 12px;
-    font-size: 13px;
-  }
-
-  .bonus-btn {
-    background: var(--accent-gold);
-    color: #0b0e17;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-weight: 900;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .bonus-btn:disabled {
-    background: #2a344d;
-    color: var(--text-sub);
-    cursor: default;
-  }
-
-  /* Leaderboard */
-  .leader-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    font-weight: 800;
-    font-size: 15px;
-    color: var(--accent-cyan);
-  }
-
-  .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 13.5px;
-  }
-
-  .row:last-child { border-bottom: none; }
-
-  .p-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .rank-tag {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: #232d45;
-    font-size: 11px;
-    font-weight: 900;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .r-1 { background: #ffbe0b; color: #000; }
-  .r-2 { background: #cbd5e1; color: #000; }
-  .r-3 { background: #d97706; color: #fff; }
-
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .dot.on { background: #00f5d4; box-shadow: 0 0 8px #00f5d4; }
-  .dot.off { background: #64748b; }
-
-  /* Modals */
-  .modal-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(5, 8, 15, 0.85);
-    backdrop-filter: blur(5px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-
-  .modal-backdrop.show { display: flex; }
-
-  .modal-box {
-    background: #151b2b;
-    border: 1px solid var(--accent-cyan);
-    border-radius: 22px;
-    padding: 20px;
-    width: 100%;
-    max-width: 370px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-  }
-
-  .modal-box h3 {
-    margin: 0 0 8px;
-    color: var(--accent-cyan);
-    font-size: 19px;
-  }
-
-  .field { margin-bottom: 12px; }
-  .field label {
-    display: block;
-    font-size: 12px;
-    color: var(--text-sub);
-    margin-bottom: 5px;
-    font-weight: 700;
-  }
-
-  .input-box {
-    width: 100%;
-    padding: 11px 12px;
-    border-radius: 12px;
-    background: #0b0e17;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-  }
-  .input-box:focus { border-color: var(--accent-cyan); }
-
-  .modal-btns {
-    display: flex;
-    gap: 10px;
-    margin-top: 16px;
-  }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui;background:#FFF8F0;color:#333;padding-bottom:20px}
+.top{background:#fff;margin:12px 14px;padding:14px;border-radius:18px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.avatar{width:56px;height:56px;border-radius:50%;background:#FFE8EE;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid #FFD6E0}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.p-name{font-weight:800;font-size:20px;color:#222}
+.p-coins{font-weight:700;font-size:17px;margin-top:2px}
+.btns-top{display:flex;gap:8px;margin:0 14px}
+.b{flex:1;border:0;padding:11px 6px;border-radius:20px;font-weight:700;font-size:13px;cursor:pointer}
+.b-play{background:#FF4D8D;color:#fff}
+.b-ref{background:#fff;border:1.5px solid #eee;color:#333}
+.b-with{background:#fff;border:1.5px solid #eee;color:#333}
+.card{background:#FFF6E8;margin:14px;border-radius:18px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.05);text-align:center}
+.card h2{margin:0;font-size:20px}
+.card p{margin:4px 0 10px;font-size:13px;color:#777}
+#msg{text-align:center;font-weight:700;color:#FF4D8D;min-height:20px;font-size:14px}
+#board{width:340px;max-width:92vw;margin:8px auto;background:#FFF3D6;border-radius:14px;padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.cell{aspect-ratio:1;background:#FFFDF5;border:1px solid #FFECC0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;user-select:none}
+.cell.sel{outline:3px solid #FF4D8D;background:#FFE0EC;transform:scale(.92)}
+.info{display:flex;justify-content:space-between;padding:8px 4px 0;font-size:13px;font-weight:700;color:#666}
+.bottom{margin:14px;background:#fff;border-radius:14px;padding:12px}
+.bottom b{display:block;text-align:center;margin-bottom:6px}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:14px}
+.daily{text-align:center;font-size:12px;color:#888;margin-top:14px}
 </style>
 </head>
 <body>
+<div class="top">
+  <div class="avatar" id="avatar">👦</div>
+  <div><div class="p-name" id="pname">John</div><div class="p-coins">🪙 <span id="coins">1,250</span> coins</div></div>
+</div>
+<div class="btns-top">
+  <button class="b b-play" onclick="newGame()">▶ Play</button>
+  <button class="b b-ref" onclick="invite()">🔗 Referral</button>
+  <button class="b b-with" onclick="withdraw()">💳 Withdraw</button>
+</div>
 
-  <!-- Top Profile Card -->
-  <div class="card">
-    <div class="profile-top">
-      <div class="avatar-ring">
-        <div class="avatar-inner" id="avatar">J</div>
-      </div>
-      <div class="user-meta">
-        <h2 id="pname">Player</h2>
-        <div class="coin-display">🪙 <span id="coins">1,250</span> coins</div>
-      </div>
-      <div class="level-pill" id="levelBadge">LVL 1</div>
-    </div>
+<div class="card">
+  <h2>Match-3 Board</h2>
+  <p>Swap 3+ matching candies to score! Moves: <span id="moves">12</span></p>
+  <div id="msg">Complete the game to get paid!</div>
+  <div id="board"></div>
+  <div class="info"><span>Score: <span id="score">0</span></span><span>Reward on Finish: <span id="reward">0</span> 🪙</span></div>
+</div>
 
-    <div class="action-row">
-      <button class="pill-btn primary" onclick="startLevel(currentLevel)">▶ Play</button>
-      <button class="pill-btn" onclick="inviteFriend()">🔗 Referral</button>
-      <button class="pill-btn" onclick="openWithdraw()">📥 Withdraw</button>
-    </div>
-  </div>
+<div class="bottom"><b>🏆 Leaderboard</b><div id="list">Loading...</div></div>
+<div class="daily" id="daily">🎁 Daily Bonus available in 03:24:11</div>
 
-  <!-- Match-3 Board Card -->
-  <div class="card">
-    <div class="board-header">
-      <h3>Match-3 Board</h3>
-      <div class="challenge-bar">
-        <div class="challenge-goal" id="challengeText">🎯 Goal: 300 pts</div>
-        <div class="moves-badge">Moves: <span id="movesLeft">15</span></div>
-      </div>
-      <div class="progress-wrap"><div class="progress-fill" id="progBar"></div></div>
-      <div id="statusMsg">Swap 3+ matching candies to score!</div>
-    </div>
-
-    <div id="board"></div>
-  </div>
-
-  <!-- Daily Bonus Bar -->
-  <div class="bonus-bar">
-    <div>🎁 <span id="bonusText">Daily Bonus Ready!</span></div>
-    <button class="bonus-btn" id="bonusBtn" onclick="claimDailyBonus()">Claim +100 🪙</button>
-  </div>
-
-  <!-- Unique Leaderboard -->
-  <div class="card">
-    <div class="leader-head">
-      <span>🏆 Top Arena Players</span>
-  
+<script>
+let tg=window.Telegram?.WebApp; if(tg){tg.expand();}
+let userId=tg?.initDataUnsafe?.user?.id?.toString()||localStorage.getItem('uid')||"guest_"+Math.floor(Math.random()*99999);
+localStorage.setItem('uid',userId);
+let username=tg?.initDataUnsafe?.user?.first_name||localStorage.getItem('uname')||"John";
+localStorage.setItem('uname',username);
+let photo=tg?.initDataUnsafe?.user?.photo_url;
+if(photo){document.getElementById('avatar').innerHTML=`<img src="${photo}">`;}
+document.getElementById('pname').innerText=username;
+let coins=parseInt(localStorage.getItem('coins')||1250);
+let score=0, moves=12, selected=null, gameOver=false;
+const candies=['❤️','🍇','🟩','💧','⭐'];
+let board=[];const el=document.getElementById('board');
+function updateUI(){
+  document.getElementById('coins').innerText=coins.toLocaleString();
+  document.getElementById('score').innerText=score;
+  document.getElementById('moves').innerText=moves;
+  document.getElementById('reward').innerText=Math.floor(score/10);
+  localStorage.setItem('coins',coins);
+}
+function build(){board=[];el.innerHTML='';score=0;moves=12;gameOver=false;selected=null;
+  for(let i=0;i<64;i++){let c=candies[Math.floor(Math.random()*candies.length)];board.push(c);let d=document.createElement('div');d.className='cell';d.innerText=c;d.onclick=()=>clickCell(i);el.appendChild(d);}
+  updateUI();document.getElementById('msg').innerText='Complete the game to get paid!';}
+function render(){[...el.children].forEach((d,i)=>{d.innerText=board[i];d.classList.toggle('sel',i===selected);});}
+function clickCell(i){
+  if(gameOver) return;
+  if(selected===null){selected=i;render();return;}
+  let a=selected;selected=null;
+  let r1=Math.floor(a/8),c1=a%8,r2=Math.floor(i/8),c2=i%8;
+  if(Math.abs(r1-r2)+Math.abs(c1-c2)!==1){render();return;}
+  [board[a],board[i]]=[board[i],board[a]];render();moves--;updateUI();setTimeout(checkMatches,200);
+  if(moves<=0){setTimeout(finishGame,400);}
+}
+function checkMatches(){
+  let matched=new Set();
+  for(let r=0;r<8;r++)for(let c=0;c<6;c++){let idx=r*8+c;if(board[idx]===board[idx+1]&&board[idx]===board[idx+2]){matched.add(idx);matched.add(idx+1);matched.add(idx+2);}}
+  for(let c=0;c<8;c++)for(let r=0;r<6;r++){let idx=r*8+c;if(board[idx]===board[idx+8]&&board[idx]===board[idx+16]){matched.add(idx);matched.add(idx+8);matched.add(idx+16);}}
+  if(matched.size===0) return;
+  score+=matched.size*10;
+  matched.forEach(i=>board[i]=candies[Math.floor(Math.random()*candies.length)]);
+  updateUI();render();
+}
+function finishGame(){
+  gameOver=true;
+  let reward=Math.floor(score/10);
+  if(reward<20) reward=20; // minimum pay per completed game
+  coins+=reward;
+  document.getElementById('msg').innerText=`🎉 Game Complete! You earned +${reward} coins!`;
+  updateUI();
+  saveToServer(reward);
+  alert(`🎉 Game Complete!\n\nScore: ${score}\nYou earned: +${reward} coins\nNew Balance: ${coins} coins\n\nTap Play to play again!`);
+}
+function saveToServer(reward){
+  // SAVE PLAYER LOG - this is what fixes leaderboard
+  fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,username:username,coins:coins,score:score,level:1,last_reward:reward})})
+  .then(()=>loadLeaderboard()).catch(()=>loadLeaderboard());
+}
+function invite(){let link=`https://t.me/candymatchs_bot?start=${userId}`;if(tg)tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Play Candy Match with me!')}`);else alert('Your link: '+link);}
+function withdraw(){
+  if(coins<1000){alert('You need 1,000 coins to withdraw.\nYou have: '+coins);return;}
+  let w=prompt('Enter wallet / account:\nYou have '+coins+' coins');if(!w)return;
+  alert('✅ Withdraw request sent!\nAdmin will pay you within 24h.');
+  fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,username:username,coins:coins,score:score,withdraw_request:w})});
+}
+async function loadLeaderboard(){
+  try{
+    let r=await fetch('/api/user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,username:username,referred_by:tg?.initDataUnsafe?.start_param||null})});
+    let d=await r.json(); if(d.coins!==undefined && localStorage.getItem('coins')==='1250') coins=d.coins; updateUI();
+    let l=await (await fetch('/api/leaderboard')).json();
+    document.getElementById('list').innerHTML=l.map((x,i)=>`<div class="row"><span>${i+1}. ${x.name||x.username}</span><span>${x.score} pts • ${x.coins} 🪙</span></div>`).join('')||'No players yet - be first!';
+  }catch(e){document.getElementById('list').innerText='Play to appear here!';}
+}
+function newGame(){build();}
+build();updateUI();loadLeaderboard();
+</script>
+</body>
+</html>
