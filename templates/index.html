@@ -436,35 +436,4 @@
     try { cv.setPointerCapture(e.pointerId); } catch (x) {}
   });
   cv.addEventListener('pointermove', e => {
-    if (!down || busy) return;
-    const dx = e.clientX - down.x, dy = e.clientY - down.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < cv.clientWidth / N * .4) return;
-    const a = down.p;
-    const b = Math.abs(dx) > Math.abs(dy) ? { r: a.r, c: a.c + (dx > 0 ? 1 : -1) } : { r: a.r + (dy > 0 ? 1 : -1), c: a.c };
-    down = null; sel = null;
-    if (inB(b.r, b.c)) trySwap(a, b);
-  });
-  cv.addEventListener('pointerup', () => {
-    if (!down) return;
-    const p = down.p; down = null;
-    if (busy) return;
-    if (sel && sel.r === p.r && sel.c === p.c) { sel = null; return; }
-    if (sel && Math.abs(sel.r - p.r) + Math.abs(sel.c - p.c) === 1) { const a = sel; sel = null; trySwap(a, p); return; }
-    sel = p; haptic('light');
-  });
-  cv.addEventListener('pointercancel', () => { down = null; });
-
-  // ---------- Boot ----------
-  store.get('gummypop_best', v => { try { best = v ? JSON.parse(v) : {}; } catch (e) { best = {}; } });
-  resize();
-  newLevel(1);
-  requestAnimationFrame(frame);
-  busy = true;
-  showCard(`<h2>Gummy Pop 🍬</h2>
-    <p>Swap neighbouring gummies to line up 3 or more of the same shape and colour.</p>
-    <p>Reach the goal score before you run out of moves. Match 4 for a blast candy, 5 for a rainbow.</p>
-    <button id="go">Play</button>`, 'go', () => { busy = false; });
-})();
-</script>
-</body>
-</html>
+    if (!down || busy) re
