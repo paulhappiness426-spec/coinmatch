@@ -1,133 +1,416 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<title>Candy Match</title>
+<script src="https://telegram.org"></script>
+<title>Candy Match Saga • Play & Earn</title>
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:system-ui;background:#FFF8F0;color:#333;padding-bottom:20px}
-.top{background:#fff;margin:12px 14px;padding:14px;border-radius:18px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
-.avatar{width:56px;height:56px;border-radius:50%;background:#FFE8EE;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid #FFD6E0}
-.avatar img{width:100%;height:100%;object-fit:cover}
-.p-name{font-weight:800;font-size:20px;color:#222}
-.p-coins{font-weight:700;font-size:17px;margin-top:2px}
-.btns-top{display:flex;gap:8px;margin:0 14px}
-.b{flex:1;border:0;padding:11px 6px;border-radius:20px;font-weight:700;font-size:13px;cursor:pointer}
-.b-play{background:#FF4D8D;color:#fff}
-.b-ref{background:#fff;border:1.5px solid #eee;color:#333}
-.b-with{background:#fff;border:1.5px solid #eee;color:#333}
-.card{background:#FFF6E8;margin:14px;border-radius:18px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.05);text-align:center}
-.card h2{margin:0;font-size:20px}
-.card p{margin:4px 0 10px;font-size:13px;color:#777}
-#msg{text-align:center;font-weight:700;color:#FF4D8D;min-height:20px;font-size:14px}
-#board{width:340px;max-width:92vw;margin:8px auto;background:#FFF3D6;border-radius:14px;padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
-.cell{aspect-ratio:1;background:#FFFDF5;border:1px solid #FFECC0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;user-select:none}
-.cell.sel{outline:3px solid #FF4D8D;background:#FFE0EC;transform:scale(.92)}
-.info{display:flex;justify-content:space-between;padding:8px 4px 0;font-size:13px;font-weight:700;color:#666}
-.bottom{margin:14px;background:#fff;border-radius:14px;padding:12px}
-.bottom b{display:block;text-align:center;margin-bottom:6px}
-.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:14px}
-.daily{text-align:center;font-size:12px;color:#888;margin-top:14px}
-</style>
-</head>
-<body>
-<div class="top">
-  <div class="avatar" id="avatar">👦</div>
-  <div><div class="p-name" id="pname">John</div><div class="p-coins">🪙 <span id="coins">1,250</span> coins</div></div>
-</div>
-<div class="btns-top">
-  <button class="b b-play" onclick="newGame()">▶ Play</button>
-  <button class="b b-ref" onclick="invite()">🔗 Referral</button>
-  <button class="b b-with" onclick="withdraw()">💳 Withdraw</button>
-</div>
+  :root {
+    --bg-top: #3b0d54;
+    --bg-mid: #220736;
+    --bg-bot: #12031f;
+    --panel-bg: linear-gradient(180deg, rgba(68, 22, 99, 0.92) 0%, rgba(39, 11, 61, 0.96) 100%);
+    --panel-border: rgba(255, 182, 230, 0.28);
+    --board-frame: linear-gradient(180deg, #ff70b8 0%, #c9186b 100%);
+    --board-inner: #2b0b3f;
+    --cell-bg: rgba(255, 255, 255, 0.08);
+    --gold-light: #ffe66d;
+    --gold-dark: #f59e0b;
+    --pink-light: #ff6bb5;
+    --pink-dark: #d90467;
+    --cyan-light: #38bdf8;
+    --cyan-dark: #0284c7;
+    --green-light: #4ade80;
+    --green-dark: #16a34a;
+  }
 
-<div class="card">
-  <h2>Match-3 Board</h2>
-  <p>Swap 3+ matching candies to score! Moves: <span id="moves">12</span></p>
-  <div id="msg">Complete the game to get paid!</div>
-  <div id="board"></div>
-  <div class="info"><span>Score: <span id="score">0</span></span><span>Reward on Finish: <span id="reward">0</span> 🪙</span></div>
-</div>
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
 
-<div class="bottom"><b>🏆 Leaderboard</b><div id="list">Loading...</div></div>
-<div class="daily" id="daily">🎁 Daily Bonus available in 03:24:11</div>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 50% 0%, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg-bot) 100%);
+    color: #fff;
+    padding: 10px 12px 32px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-<script>
-let tg=window.Telegram?.WebApp; if(tg){tg.expand();}
-let userId=tg?.initDataUnsafe?.user?.id?.toString()||localStorage.getItem('uid')||"guest_"+Math.floor(Math.random()*99999);
-localStorage.setItem('uid',userId);
-let username=tg?.initDataUnsafe?.user?.first_name||localStorage.getItem('uname')||"John";
-localStorage.setItem('uname',username);
-let photo=tg?.initDataUnsafe?.user?.photo_url;
-if(photo){document.getElementById('avatar').innerHTML=`<img src="${photo}">`;}
-document.getElementById('pname').innerText=username;
-let coins=parseInt(localStorage.getItem('coins')||1250);
-let score=0, moves=12, selected=null, gameOver=false;
-const candies=['❤️','🍇','🟩','💧','⭐'];
-let board=[];const el=document.getElementById('board');
-function updateUI(){
-  document.getElementById('coins').innerText=coins.toLocaleString();
-  document.getElementById('score').innerText=score;
-  document.getElementById('moves').innerText=moves;
-  document.getElementById('reward').innerText=Math.floor(score/10);
-  localStorage.setItem('coins',coins);
-}
-function build(){board=[];el.innerHTML='';score=0;moves=12;gameOver=false;selected=null;
-  for(let i=0;i<64;i++){let c=candies[Math.floor(Math.random()*candies.length)];board.push(c);let d=document.createElement('div');d.className='cell';d.innerText=c;d.onclick=()=>clickCell(i);el.appendChild(d);}
-  updateUI();document.getElementById('msg').innerText='Complete the game to get paid!';}
-function render(){[...el.children].forEach((d,i)=>{d.innerText=board[i];d.classList.toggle('sel',i===selected);});}
-function clickCell(i){
-  if(gameOver) return;
-  if(selected===null){selected=i;render();return;}
-  let a=selected;selected=null;
-  let r1=Math.floor(a/8),c1=a%8,r2=Math.floor(i/8),c2=i%8;
-  if(Math.abs(r1-r2)+Math.abs(c1-c2)!==1){render();return;}
-  [board[a],board[i]]=[board[i],board[a]];render();moves--;updateUI();setTimeout(checkMatches,200);
-  if(moves<=0){setTimeout(finishGame,400);}
-}
-function checkMatches(){
-  let matched=new Set();
-  for(let r=0;r<8;r++)for(let c=0;c<6;c++){let idx=r*8+c;if(board[idx]===board[idx+1]&&board[idx]===board[idx+2]){matched.add(idx);matched.add(idx+1);matched.add(idx+2);}}
-  for(let c=0;c<8;c++)for(let r=0;r<6;r++){let idx=r*8+c;if(board[idx]===board[idx+8]&&board[idx]===board[idx+16]){matched.add(idx);matched.add(idx+8);matched.add(idx+16);}}
-  if(matched.size===0) return;
-  score+=matched.size*10;
-  matched.forEach(i=>board[i]=candies[Math.floor(Math.random()*candies.length)]);
-  updateUI();render();
-}
-function finishGame(){
-  gameOver=true;
-  let reward=Math.floor(score/10);
-  if(reward<20) reward=20; // minimum pay per completed game
-  coins+=reward;
-  document.getElementById('msg').innerText=`🎉 Game Complete! You earned +${reward} coins!`;
-  updateUI();
-  saveToServer(reward);
-  alert(`🎉 Game Complete!\n\nScore: ${score}\nYou earned: +${reward} coins\nNew Balance: ${coins} coins\n\nTap Play to play again!`);
-}
-function saveToServer(reward){
-  // SAVE PLAYER LOG - this is what fixes leaderboard
-  fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,username:username,coins:coins,score:score,level:1,last_reward:reward})})
-  .then(()=>loadLeaderboard()).catch(()=>loadLeaderboard());
-}
-function invite(){let link=`https://t.me/candymatchs_bot?start=${userId}`;if(tg)tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Play Candy Match with me!')}`);else alert('Your link: '+link);}
-function withdraw(){
-  if(coins<1000){alert('You need 1,000 coins to withdraw.\nYou have: '+coins);return;}
-  let w=prompt('Enter wallet / account:\nYou have '+coins+' coins');if(!w)return;
-  alert('✅ Withdraw request sent!\nAdmin will pay you within 24h.');
-  fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,username:username,coins:coins,score:score,withdraw_request:w})});
-}
-async function loadLeaderboard(){
-  try{
-    let r=await fetch('/api/user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,username:username,referred_by:tg?.initDataUnsafe?.start_param||null})});
-    let d=await r.json(); if(d.coins!==undefined && localStorage.getItem('coins')==='1250') coins=d.coins; updateUI();
-    let l=await (await fetch('/api/leaderboard')).json();
-    document.getElementById('list').innerHTML=l.map((x,i)=>`<div class="row"><span>${i+1}. ${x.name||x.username}</span><span>${x.score} pts • ${x.coins} 🪙</span></div>`).join('')||'No players yet - be first!';
-  }catch(e){document.getElementById('list').innerText='Play to appear here!';}
-}
-function newGame(){build();}
-build();updateUI();loadLeaderboard();
-</script>
-</body>
-</html>
+  /* 3D Glossy Panel */
+  .candy-card {
+    background: var(--panel-bg);
+    border: 1.5px solid var(--panel-border);
+    border-radius: 24px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.55),
+      inset 0 2px 1px rgba(255, 255, 255, 0.22);
+  }
+
+  /* Top Profile Header */
+  .profile-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .avatar-wrap {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(180deg, #ffe66d 0%, #ff5e8a 100%);
+    box-shadow: 0 4px 14px rgba(255, 94, 138, 0.55);
+    flex-shrink: 0;
+  }
+
+  .avatar-core {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #7c2ae8, #3b0d54);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 900;
+    color: #ffe66d;
+    overflow: hidden;
+  }
+
+  .avatar-core img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .user-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .user-name {
+    font-size: 19px;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .coin-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 230, 109, 0.4);
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--gold-light);
+  }
+
+  .lvl-badge {
+    background: linear-gradient(180deg, #ffe66d 0%, #f59e0b 100%);
+    color: #3b0d00;
+    font-weight: 900;
+    font-size: 12px;
+    padding: 6px 11px;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 #b45309, 0 6px 12px rgba(0, 0, 0, 0.4);
+    text-transform: uppercase;
+  }
+
+  /* Juicy 3D Jelly Buttons */
+  .jelly-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .jelly-btn {
+    position: relative;
+    border: none;
+    border-radius: 18px;
+    padding: 10px 6px;
+    font-weight: 900;
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+
+  .jelly-btn::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 10%;
+    right: 10%;
+    height: 38%;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+    pointer-events: none;
+  }
+
+  .jelly-btn:active {
+    transform: translateY(3px);
+  }
+
+  .btn-pink {
+    background: linear-gradient(180deg, var(--pink-light) 0%, var(--pink-dark) 100%);
+    box-shadow: 0 4px 0 #8f0042, 0 6px 14px rgba(217, 4, 103, 0.45);
+  }
+  .btn-pink:active { box-shadow: 0 1px 0 #8f0042; }
+
+  .btn-blue {
+    background: linear-gradient(180deg, var(--cyan-light) 0%, var(--cyan-dark) 100%);
+    box-shadow: 0 4px 0 #075985, 0 6px 14px rgba(2, 132, 199, 0.4);
+  }
+  .btn-blue:active { box-shadow: 0 1px 0 #075985; }
+
+  .btn-green {
+    background: linear-gradient(180deg, var(--green-light) 0%, var(--green-dark) 100%);
+    box-shadow: 0 4px 0 #14532d, 0 6px 14px rgba(22, 163, 74, 0.4);
+  }
+  .btn-green:active { box-shadow: 0 1px 0 #14532d; }
+
+  /* Challenge & Board Header */
+  .saga-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    margin: 0 0 8px;
+    background: linear-gradient(180deg, #ffffff 20%, #ffd1ec 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  }
+
+  .quest-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(18, 3, 31, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+  }
+
+  .quest-goal {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffe66d;
+  }
+
+  .moves-counter {
+    background: linear-gradient(180deg, #ff5e8a, #c9184a);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    font-weight: 900;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  }
+
+  .sugar-bar {
+    height: 10px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 20px;
+    padding: 2px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .sugar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #ffbe0b, #ff2e93, #38bdf8);
+    box-shadow: 0 0 10px rgba(255, 46, 147, 0.7);
+    transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  #bannerMsg {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffd6f0;
+    min-height: 19px;
+    margin-bottom: 8px;
+  }
+
+  /* 3D Recessed Candy Board */
+  .board-bezel {
+    width: 344px;
+    max-width: 93vw;
+    margin: 0 auto;
+    padding: 6px;
+    border-radius: 22px;
+    background: var(--board-frame);
+    box-shadow:
+      0 8px 0 #7a093e,
+      0 16px 32px rgba(0, 0, 0, 0.65),
+      inset 0 2px 2px rgba(255, 255, 255, 0.5);
+  }
+
+  #board {
+    background: var(--board-inner);
+    border-radius: 17px;
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    box-shadow: inset 0 5px 14px rgba(0, 0, 0, 0.75);
+  }
+
+  .cell {
+    aspect-ratio: 1;
+    background: var(--cell-bg);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+  }
+
+  .cell svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.55));
+    transition: transform 0.15s ease;
+  }
+
+  .cell.sel {
+    background: rgba(255, 230, 109, 0.28);
+    outline: 2.5px solid #ffe66d;
+    transform: scale(1.08);
+    z-index: 2;
+    box-shadow: 0 0 15px rgba(255, 230, 109, 0.75);
+  }
+
+  .cell.pop svg {
+    animation: candyPop 0.28s ease-out forwards;
+  }
+
+  @keyframes candyPop {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.9; }
+    100% { transform: scale(0); opacity: 0; }
+  }
+
+  .board-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 4px 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: #e9d5ff;
+  }
+
+  /* Daily Bonus Strip */
+  .daily-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, rgba(88, 28, 135, 0.85), rgba(131, 24, 67, 0.85));
+    border: 1.5px solid rgba(255, 230, 109, 0.35);
+    border-radius: 18px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .claim-btn {
+    background: linear-gradient(180deg, #ffe66d 0%, #f59e0b 100%);
+    color: #3b0d00;
+    border: none;
+    padding: 7px 13px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #b45309;
+  }
+
+  .claim-btn:disabled {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.5);
+    box-shadow: none;
+    cursor: default;
+  }
+
+  /* Leaderboard */
+  .lb-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 900;
+    color: #ffe66d;
+    margin-bottom: 8px;
+  }
+
+  .lb-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 13.5px;
+  }
+  .lb-row:last-child { border-bottom: none; }
+
+  .lb-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-dot.on { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+  .status-dot.off { background: #94a3b8; }
+
+  /* Modal */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 3, 26, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-bg.open { display: flex; }
+
+  .modal-box {
+    background: linear-gradient(180deg, #4a156e 0%, #26093b 100%);
+    border: 2px solid #ff70b8;
+    border-radius: 24px;
+    padding: 20px;
+    width: 100%;
+    max-width: 365px;
