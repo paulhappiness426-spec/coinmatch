@@ -16,14 +16,12 @@
       --pink: #ff5fa8;
       --gold: #ffd93d;
     }
-
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
     }
-
     html, body {
       margin: 0;
       height: 100%;
@@ -33,7 +31,6 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: radial-gradient(120% 90% at 50% 0%, var(--bg2), var(--bg1));
     }
-
     #app {
       height: 100dvh;
       display: flex;
@@ -42,7 +39,6 @@
       gap: 10px;
       padding: calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 10px);
     }
-
     header {
       width: 100%;
       max-width: 440px;
@@ -50,7 +46,6 @@
       align-items: center;
       gap: 8px;
     }
-
     h1 {
       margin: 0;
       flex: 1;
@@ -61,7 +56,6 @@
       background-clip: text;
       color: transparent;
     }
-
     .stat {
       background: var(--panel);
       border: 1px solid var(--line);
@@ -70,19 +64,13 @@
       text-align: center;
       min-width: 56px;
     }
-
-    .stat b {
-      display: block;
-      font-size: 17px;
-    }
-
+    .stat b { display: block; font-size: 17px; }
     .stat span {
       font-size: 9px;
       color: var(--dim);
       text-transform: uppercase;
       letter-spacing: .1em;
     }
-
     .bar {
       width: 100%;
       max-width: 440px;
@@ -93,7 +81,6 @@
       overflow: hidden;
       position: relative;
     }
-
     .bar i {
       display: block;
       height: 100%;
@@ -101,7 +88,6 @@
       background: linear-gradient(90deg, #ff5fa8, #ffd93d);
       transition: width .35s;
     }
-
     .barlbl {
       width: 100%;
       max-width: 440px;
@@ -111,13 +97,14 @@
       color: var(--dim);
       margin-top: -4px;
     }
-
     canvas {
       border-radius: 18px;
       touch-action: none;
       box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+      background: rgba(255,255,255,.06);
+      display: block;
+      flex-shrink: 0;
     }
-
     .hint {
       font-size: 12px;
       color: var(--dim);
@@ -125,7 +112,6 @@
       max-width: 440px;
       line-height: 1.4;
     }
-
     #modal {
       position: fixed;
       inset: 0;
@@ -136,11 +122,7 @@
       z-index: 5;
       padding: 20px;
     }
-
-    #modal.show {
-      display: flex;
-    }
-
+    #modal.show { display: flex; }
     .card {
       background: linear-gradient(160deg, #4a1a7a, #2a1050);
       border: 1px solid var(--line);
@@ -150,26 +132,9 @@
       width: 100%;
       text-align: center;
     }
-
-    .card h2 {
-      margin: 0 0 8px;
-      font-size: 24px;
-    }
-
-    .card p {
-      color: var(--dim);
-      margin: 6px 0;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .stars {
-      font-size: 32px;
-      letter-spacing: 6px;
-      color: var(--gold);
-      margin: 6px 0;
-    }
-
+    .card h2 { margin: 0 0 8px; font-size: 24px; }
+    .card p { color: var(--dim); margin: 6px 0; font-size: 14px; line-height: 1.45; }
+    .stars { font-size: 32px; letter-spacing: 6px; color: var(--gold); margin: 6px 0; }
     .card button {
       margin-top: 14px;
       padding: 13px 26px;
@@ -182,10 +147,7 @@
       background: linear-gradient(90deg, #ffd93d, #ff9f1c);
       cursor: pointer;
     }
-
-    .card button:active {
-      transform: scale(.95);
-    }
+    .card button:active { transform: scale(.95); }
   </style>
 </head>
 <body>
@@ -196,29 +158,20 @@
       <div class="stat"><b id="sScore">0</b><span>Score</span></div>
       <div class="stat"><b id="sMoves">20</b><span>Moves</span></div>
     </header>
-
     <div class="bar"><i id="prog"></i></div>
-
-    <div class="barlbl">
-      <span id="tgt">Goal: 0</span>
-      <span id="bst"></span>
-    </div>
-
+    <div class="barlbl"><span id="tgt">Goal: 0</span><span id="bst"></span></div>
     <canvas id="cv"></canvas>
-
     <div class="hint">
       Swipe or tap two neighbours to swap. Match 3+. Match 4 = <b>blast</b> candy (clears 3×3).
       Match 5 = <b>rainbow</b> (swap it with a colour to wipe that colour).
     </div>
   </div>
-
   <div id="modal"><div class="card" id="card"></div></div>
 
   <script>
     (() => {
       // ---------- Telegram ----------
       const tg = (window.Telegram && Telegram.WebApp) || null;
-
       try {
         if (tg) {
           tg.ready();
@@ -232,15 +185,12 @@
       const haptic = (t) => {
         try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t || 'light'); } catch (e) {}
       };
-
       const notify = (t) => {
         try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred(t); } catch (e) {}
       };
-
       const cloud = () => {
         try { return tg && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast('6.9'); } catch (e) { return false; }
       };
-
       const store = {
         get(k, cb) {
           if (cloud()) {
@@ -276,10 +226,8 @@
       function types() {
         return board.map(row => row.map(cd => cd ? cd.type : -2));
       }
-
       function runsOn(g) {
         const runs = [];
-
         for (let r = 0; r < N; r++) {
           let c = 0;
           while (c < N) {
@@ -294,7 +242,6 @@
             c = e;
           }
         }
-
         for (let c = 0; c < N; c++) {
           let r = 0;
           while (r < N) {
@@ -309,15 +256,11 @@
             r = e;
           }
         }
-
         return runs;
       }
-
       function hasMove() {
         for (const row of board) for (const cd of row) if (cd && cd.special === 2) return true;
-
         const g = types();
-
         for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
           for (const [dr, dc] of [[0, 1], [1, 0]]) {
             const nr = r + dr, nc = c + dc;
@@ -331,10 +274,8 @@
             if (ok) return true;
           }
         }
-
         return false;
       }
-
       function fillBoard() {
         do {
           board = [];
@@ -354,7 +295,6 @@
           }
         } while (!hasMove());
       }
-
       function doSwap(a, b) {
         const ca = board[a.r][a.c], cb = board[b.r][b.c];
         board[a.r][a.c] = cb;
@@ -362,7 +302,6 @@
         ca.r = b.r; ca.c = b.c;
         cb.r = a.r; cb.c = a.c;
       }
-
       function gravity() {
         for (let c = 0; c < N; c++) {
           let write = N - 1;
@@ -381,7 +320,6 @@
           for (let r = write; r >= 0; r--) board[r][c] = mk(rnd(T), r, c, r - miss - 1);
         }
       }
-
       function burst(cd) {
         const col = cd.type >= 0 ? COLORS[cd.type] : '#ffffff';
         for (let i = 0; i < 7; i++) {
@@ -393,18 +331,14 @@
           });
         }
       }
-
       async function clearCells(list, combo, protect) {
         protect = protect || new Set();
         const set = new Map();
-
         for (const [r, c] of list) {
           const k = r * N + c;
           if (!protect.has(k)) set.set(k, [r, c]);
         }
-
         const arr = [...set.values()];
-
         for (let i = 0; i < arr.length; i++) {
           const [r, c] = arr[i], cd = board[r][c];
           if (cd && cd.special === 1) {
@@ -417,9 +351,7 @@
             }
           }
         }
-
         score += set.size * 10 * combo + (set.size > 3 ? (set.size - 3) * 5 : 0);
-
         for (const [r, c] of set.values()) {
           const cd = board[r][c];
           if (!cd) continue;
@@ -427,43 +359,33 @@
           dying.push(cd);
           board[r][c] = null;
         }
-
         if (set.size > 4 || combo >= 2) haptic(set.size > 6 ? 'heavy' : 'medium');
         else haptic('light');
-
         if (combo >= 2) {
           toast = combo >= 4 ? 'Sugar rush! x' + combo : 'Combo x' + combo;
           toastT = 1.1;
         }
-
         updateHud();
         await sleep(190);
         gravity();
         await sleep(430);
       }
-
       async function resolve(swapped) {
         let combo = 0;
-
         while (true) {
           const runs = runsOn(types());
           if (!runs.length) break;
           combo++;
-
           const list = [], protect = new Set();
-
           for (const run of runs) {
             for (const rc of run.cells) list.push(rc);
-
             if (run.cells.length >= 4) {
               let pos = run.cells[Math.floor(run.cells.length / 2)];
-
               if (swapped && combo === 1) {
                 for (const s of swapped) {
                   if (run.cells.some(([r, c]) => r === s.r && c === s.c)) pos = [s.r, s.c];
                 }
               }
-
               const cd = board[pos[0]][pos[1]];
               if (cd && cd.special !== 2) {
                 if (run.cells.length >= 5) { cd.special = 2; cd.type = -1; }
@@ -473,26 +395,20 @@
               }
             }
           }
-
           await clearCells(list, combo, protect);
         }
       }
-
       function rainbowCells(rc, other) {
         const list = [[rc.r, rc.c]];
-
         for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
           const cd = board[r][c];
           if (!cd || cd === rc) continue;
           if (other.special === 2 || cd.type === other.type) list.push([r, c]);
         }
-
         return list;
       }
-
       function shuffleBoard() {
         let g;
-
         do {
           g = [];
           for (let r = 0; r < N; r++) {
@@ -507,28 +423,22 @@
           board = saved;
           return ok;
         })());
-
         for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
           const cd = board[r][c];
           cd.type = g[r][c];
           cd.special = 0;
           cd.pop = 1;
         }
-
         toast = 'No moves — shuffled!';
         toastT = 1.4;
       }
-
       async function trySwap(a, b) {
         if (busy) return;
         busy = true;
         sel = null;
-
         doSwap(a, b);
         await sleep(210);
-
         const ca = board[a.r][a.c], cb = board[b.r][b.c];
-
         if (ca.special === 2 || cb.special === 2) {
           const rc = ca.special === 2 ? ca : cb;
           const other = rc === ca ? cb : ca;
@@ -547,7 +457,6 @@
           busy = false;
           return;
         }
-
         updateHud();
         if (score >= target) { win(); return; }
         if (moves <= 0) { lose(); return; }
@@ -562,26 +471,21 @@
         moves = 20;
         score = 0;
         target = 400 + l * 350;
-
         particles = [];
         dying = [];
         sel = null;
         busy = false;
-
         fillBoard();
-
         document.getElementById('sLvl').textContent = level;
         document.getElementById('tgt').textContent = 'Goal: ' + target;
         document.getElementById('bst').textContent = best['l' + level] ? 'Best: ' + best['l' + level] : '';
         updateHud();
       }
-
       function updateHud() {
         document.getElementById('sScore').textContent = score;
         document.getElementById('sMoves').textContent = Math.max(0, moves);
         document.getElementById('prog').style.width = Math.min(100, score / target * 100) + '%';
       }
-
       function showCard(html, btnId, fn) {
         document.getElementById('card').innerHTML = html;
         document.getElementById('modal').classList.add('show');
@@ -590,20 +494,17 @@
           fn();
         };
       }
-
       function win() {
         notify('success');
         const stars = moves >= 8 ? 3 : moves >= 4 ? 2 : 1;
         const bonus = moves * 20;
         score += bonus;
         updateHud();
-
         const key = 'l' + level;
         if (!best[key] || score > best[key]) {
           best[key] = score;
           store.set('gummypop_best', JSON.stringify(best));
         }
-
         showCard(
           `<h2>Level ${level} cleared!</h2>
            <div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
@@ -613,7 +514,6 @@
           () => newLevel(level + 1)
         );
       }
-
       function lose() {
         notify('error');
         showCard(
@@ -626,9 +526,11 @@
       // ---------- Rendering ----------
       const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
       let size = 320;
-
       function resize() {
-        size = Math.max(220, Math.min(window.innerWidth - 24, 440, window.innerHeight - 190));
+        // FIX: use real visible width, don't let header / browser bar make it 0
+        const w = window.innerWidth - 24;
+        const h = window.innerHeight - 220;
+        size = Math.max(280, Math.min(w, 440, h));
         const r = window.devicePixelRatio || 1;
         cv.style.width = size + 'px';
         cv.style.height = size + 'px';
@@ -636,17 +538,240 @@
         cv.height = Math.round(size * r);
         ctx.setTransform(r, 0, 0, r, 0, 0);
       }
-
       window.addEventListener('resize', resize);
-
       function shade(hex, amt) {
         const n = parseInt(hex.slice(1), 16);
         let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
         const f = (v) => Math.round(amt >= 0 ? v + (255 - v) * amt : v * (1 + amt));
         return `rgb(${f(r)},${f(g)},${f(b)})`;
       }
-
       function shapePath(type, R) {
         ctx.beginPath();
+        const poly = (n, rad, rot, sx) => {
+          for (let i = 0; i < n; i++) {
+            const a = rot + i * 6.2832 / n;
+            const x = Math.cos(a) * rad * (sx || 1);
+            const y = Math.sin(a) * rad;
+            i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+          }
+          ctx.closePath();
+        };
+        switch (type) {
+          case 0: ctx.arc(0, 0, R * .82, 0, 6.2832); break;
+          case 1: {
+            const h = R * .72, rr = R * .3;
+            ctx.moveTo(-h + rr, -h);
+            ctx.arcTo(h, -h, h, h, rr);
+            ctx.arcTo(h, h, -h, h, rr);
+            ctx.arcTo(-h, h, -h, -h, rr);
+            ctx.arcTo(-h, -h, h, -h, rr);
+            ctx.closePath();
+            break;
+          }
+          case 2: ctx.save(); ctx.translate(0, R * .08); poly(3, R * .92, -Math.PI / 2); ctx.restore(); break;
+          case 3: poly(4, R * .95, -Math.PI / 2, .85); break;
+          case 4: poly(6, R * .88, 0); break;
+          case 5:
+            for (let i = 0; i < 10; i++) {
+              const a = -Math.PI / 2 + i * Math.PI / 5;
+              const rad = i % 2 ? R * .45 : R * .95;
+              const x = Math.cos(a) * rad, y = Math.sin(a) * rad;
+              i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+            }
+            ctx.closePath();
+            break;
+        }
+      }
+      function drawCandy(x, y, R, cd, t, selected) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.globalAlpha = Math.max(0, Math.min(1, cd.s));
+        if (cd.special === 2) {
+          ctx.rotate(t * 1.5);
+          for (let i = 0; i < 6; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, R * .88, i * 1.0472, (i + 1) * 1.0472);
+            ctx.closePath();
+            ctx.fillStyle = COLORS[i];
+            ctx.fill();
+          }
+          ctx.rotate(-t * 1.5);
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = R * .12;
+          ctx.beginPath();
+          ctx.arc(0, 0, R * .88, 0, 6.2832);
+          ctx.stroke();
+        } else {
+          const col = COLORS[cd.type];
+          shapePath(cd.type, R);
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = R * .22;
+          ctx.strokeStyle = col;
+          ctx.stroke();
+          const g = ctx.createRadialGradient(-R * .3, -R * .35, R * .08, 0, 0, R * 1.1);
+          g.addColorStop(0, shade(col, .5));
+          g.addColorStop(.5, col);
+          g.addColorStop(1, shade(col, -.3));
+          shapePath(cd.type, R);
+          ctx.fillStyle = g;
+          ctx.fill();
+          if (cd.special === 1) {
+            const p = 0.5 + 0.5 * Math.sin(t * 6);
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 8 + 10 * p;
+            ctx.strokeStyle = 'rgba(255,255,255,.95)';
+            ctx.lineWidth = R * .13;
+            ctx.beginPath();
+            ctx.arc(0, 0, R * .55, 0, 6.2832);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-R * .3, 0); ctx.lineTo(R * .3, 0);
+            ctx.moveTo(0, -R * .3); ctx.lineTo(0, R * .3);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+          }
+        }
+        ctx.globalAlpha *= .55;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.ellipse(-R * .3, -R * .38, R * .26, R * .14, -.6, 0, 6.2832);
+        ctx.fill();
+        ctx.restore();
+        if (selected) {
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(x, y, R * 1.08, 0, 6.2832);
+          ctx.stroke();
+        }
+      }
+      let last = performance.now();
+      function frame(now) {
+        if (!board) { requestAnimationFrame(frame); return; }
+        const dt = Math.min(.05, (now - last) / 1000);
+        last = now;
+        const k = 1 - Math.exp(-dt * 16), t = now / 1000, cell = size / N;
+        for (const row of board) for (const cd of row) if (cd) {
+          cd.x += (cd.c - cd.x) * k;
+          cd.y += (cd.r - cd.y) * k;
+          cd.pop = Math.max(0, cd.pop - dt * 4);
+        }
+        for (const cd of dying) cd.s -= dt * 6;
+        dying = dying.filter(cd => cd.s > 0);
+        for (const p of particles) {
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += 9 * dt;
+          p.life -= dt;
+        }
+        particles = particles.filter(p => p.life > 0);
+        toastT = Math.max(0, toastT - dt);
+        ctx.clearRect(0, 0, size, size);
+        const bg = ctx.createLinearGradient(0, 0, 0, size);
+        bg.addColorStop(0, 'rgba(255,255,255,.14)');
+        bg.addColorStop(1, 'rgba(255,255,255,.06)');
+        ctx.fillStyle = bg;
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(0, 0, size, size, 18) : ctx.rect(0, 0, size, size);
+        ctx.fill();
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if ((r + c) % 2) {
+          ctx.fillStyle = 'rgba(255,255,255,.06)';
+          ctx.fillRect(c * cell, r * cell, cell, cell);
+        }
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, size, size);
+        ctx.clip();
+        const R = cell * .42;
+        for (const cd of dying) drawCandy((cd.x + .5) * cell, (cd.y + .5) * cell, R * (0.4 + .6 * cd.s), cd, t, false);
+        for (const row of board) for (const cd of row) if (cd) {
+          const isSel = sel && sel.r === cd.r && sel.c === cd.c;
+          drawCandy((cd.x + .5) * cell, (cd.y + .5) * cell, R * (1 + cd.pop * .35 + (isSel ? .08 : 0)), cd, t, isSel);
+        }
+        for (const p of particles) {
+          ctx.globalAlpha = Math.max(0, p.life / .55);
+          ctx.fillStyle = p.col;
+          ctx.beginPath();
+          ctx.arc(p.x * cell, p.y * cell, cell * .06, 0, 6.2832);
+          ctx.fill();
+        }
+        ctx.restore();
+        ctx.globalAlpha = 1;
+        if (toastT > 0) {
+          ctx.globalAlpha = Math.min(1, toastT * 2);
+          ctx.font = '800 ' + Math.round(size * .075) + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = 'rgba(42,16,80,.9)';
+          ctx.strokeText(toast, size / 2, size * .5);
+          ctx.fillStyle = '#ffd93d';
+          ctx.fillText(toast, size / 2, size * .5);
+          ctx.globalAlpha = 1;
+          ctx.textAlign = 'left';
+        }
+        requestAnimationFrame(frame);
+      }
 
-        const poly = (n, rad, rot, sx)
+      // ---------- Input ----------
+      function cellAt(e) {
+        const rc = cv.getBoundingClientRect();
+        const c = Math.floor((e.clientX - rc.left) / rc.width * N);
+        const r = Math.floor((e.clientY - rc.top) / rc.height * N);
+        return inB(r, c) ? { r, c } : null;
+      }
+      let down = null;
+      cv.addEventListener('pointerdown', (e) => {
+        if (busy) return;
+        const p = cellAt(e);
+        if (!p) return;
+        down = { p, x: e.clientX, y: e.clientY };
+        try { cv.setPointerCapture(e.pointerId); } catch (x) {}
+      });
+      cv.addEventListener('pointermove', (e) => {
+        if (!down || busy) return;
+        const dx = e.clientX - down.x, dy = e.clientY - down.y;
+        const adx = Math.abs(dx), ady = Math.abs(dy);
+        const need = 18;
+        if (Math.max(adx, ady) < need) return;
+        const dir = adx > ady
+          ? { r: 0, c: dx > 0 ? 1 : -1 }
+          : { r: dy > 0 ? 1 : -1, c: 0 };
+        const a = down.p;
+        const b = { r: a.r + dir.r, c: a.c + dir.c };
+        down = null;
+        if (inB(b.r, b.c)) trySwap(a, b);
+      });
+      cv.addEventListener('pointerup', (e) => {
+        if (!down || busy) { down = null; return; }
+        const p = cellAt(e);
+        down = null;
+        if (!p) return;
+        if (!sel) { sel = p; return; }
+        if (sel.r === p.r && sel.c === p.c) { sel = null; return; }
+        const isNeighbour = Math.abs(sel.r - p.r) + Math.abs(sel.c - p.c) === 1;
+        if (isNeighbour) trySwap(sel, p);
+        sel = p;
+      });
+      cv.addEventListener('pointercancel', () => { down = null; });
+
+      // ---------- Start - FIXED: don't wait for CloudStorage ----------
+      function start() {
+        resize();
+        newLevel(1);
+        requestAnimationFrame(frame);
+      }
+      // Try to load best in background, but start anyway after 300ms max
+      let started = false;
+      const doStart = () => { if (!started) { started = true; start(); } };
+      try {
+        store.get('gummypop_best', (v) => {
+          try { best = v ? JSON.parse(v) : {}; } catch (e) { best = {}; }
+          doStart();
+        });
+      } catch (e) { doStart(); }
+      setTimeout(doStart, 300);
+    })();
+  </script>
+</body>
+</html>
